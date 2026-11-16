@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Subgrid">
+<meta name="theme-color" content="#0d0f13">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Subgrid</title>
+<link rel="preconnect" href="https://www.reddit.com" crossorigin>
+<link rel="preconnect" href="https://preview.redd.it">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<style>
+/* Layout: one sticky toolbar (subreddit chips + sort), an edge-to-edge square tile grid, a full-screen swipe viewer. */
+:root{
+  --bg:#0d0f13; --panel:#161a21; --panel2:#212732; --line:#2b3240;
+  --fg:#e9ecf2; --dim:#8e97a9; --accent:#ff6a3d; --accent-ink:#1b0c06;
+  --tile:168px; --gap:5px;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font:15px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{display:block}
+
+/* ---------- toolbar ---------- */
+.bar{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  padding:calc(8px + var(--sat)) max(10px,var(--sar)) 8px max(10px,var(--sal));
+  background:rgba(13,15,19,.86);-webkit-backdrop-filter:saturate(1.5) blur(16px);backdrop-filter:saturate(1.5) blur(16px);
+  border-bottom:1px solid var(--line)}
+.bar::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;opacity:0;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent) no-repeat;background-size:40% 100%}
+.bar.loading::after{opacity:1;animation:sweep 1s linear infinite}
+@keyframes sweep{from{background-position:-67% 0}to{background-position:167% 0}}
+.chips{flex:1 1 300px;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:38px;padding:0 15px;border-radius:19px;border:1px solid transparent;background:var(--panel2);font-weight:600;white-space:nowrap}
+.chip.on{background:var(--accent);color:var(--accent-ink)}
+.tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;flex:0 1 auto;max-width:100%;margin-left:auto}
+.seg{display:flex;background:var(--panel2);border-radius:10px;padding:3px}
+.seg button{height:32px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--dim);font-weight:600}
+.seg button.on{background:var(--bg);color:var(--fg)}
+.pick{height:38px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font-weight:600}
+.icon{width:38px;height:38px;display:grid;place-items:center;border-radius:10px;border:0;background:var(--panel2)}
+.icon.go{background:var(--accent);color:var(--accent-ink)}
+@media (max-width:1000px){.chips{flex-basis:100%}.tools{flex:1 1 100%;justify-content:flex-start;margin-left:0}#refreshBtn{margin-left:auto}}
+
+/* ---------- grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--tile),1fr));gap:var(--gap);
+  padding:var(--gap) max(var(--gap),var(--sar)) var(--gap) max(var(--gap),var(--sal))}
+.tile{position:relative;display:block;width:100%;aspect-ratio:1;padding:0;border:0;border-radius:6px;overflow:hidden;background:var(--panel)}
+.tile img{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;object-fit:cover}
+.tile .cap{position:absolute;left:0;right:0;bottom:0;padding:20px 8px 6px;font-size:12px;line-height:1.25;color:#fff;text-align:left;
+  background:linear-gradient(transparent,rgba(0,0,0,.74));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.tile .badge{position:absolute;top:6px;right:6px;display:flex;align-items:center;gap:3px;height:22px;padding:0 6px;border-radius:6px;
+  background:rgba(0,0,0,.62);color:#fff;font-size:11px;font-weight:700;letter-spacing:.03em;pointer-events:none}
+.tile.noimg::before{content:"No preview";position:absolute;top:0;right:0;bottom:0;left:0;display:grid;place-items:center;color:var(--dim);font-size:12px}
+.tile.sk{animation:pulse 1.1s ease-in-out infinite alternate}
+@keyframes pulse{from{opacity:.45}to{opacity:1}}
+.msg{padding:26px 16px calc(34px + var(--sab));text-align:center;color:var(--dim);display:grid;gap:12px;justify-items:center}
+.msg p{margin:0;max-width:46ch}
+.btn{height:42px;padding:0 18px;border-radius:21px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:700}
+.btn.quiet{background:var(--panel2);color:var(--fg)}
+
+/* ---------- viewer ---------- */
+.viewer{position:fixed;top:0;right:0;bottom:0;left:0;z-index:50;background:#000;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.stage{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;transition:transform .16s ease-out,opacity .16s ease-out}
+.stage.drag{transition:none}
+.stage .media,.stage .ph{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;object-fit:contain}
+.stage .ph{filter:blur(6px)}
+.stage .ph.sharp{filter:none;opacity:.55}
+.embed{position:relative;aspect-ratio:var(--ar);background:#000;
+  width:min(calc(100vw - 150px),calc((100vh - 110px) * var(--ar)));
+  width:min(calc(100vw - 150px),calc((100dvh - 110px) * var(--ar)))}
+.embed iframe{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;border:0}
+.ext{position:relative;display:inline-flex;align-items:center;height:48px;padding:0 22px;border-radius:24px;background:var(--accent);color:var(--accent-ink);font-weight:700;text-decoration:none}
+.note{position:relative;max-width:40ch;padding:0 20px;text-align:center;color:var(--dim)}
+.spin{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;animation:rot .8s linear infinite;display:none;pointer-events:none}
+.viewer.busy .spin{display:block}
+@keyframes rot{to{transform:rotate(360deg)}}
+.vtop{position:absolute;left:0;right:0;top:0;display:flex;align-items:flex-start;gap:10px;
+  padding:calc(10px + var(--sat)) max(12px,var(--sar)) 26px max(12px,var(--sal));
+  background:linear-gradient(rgba(0,0,0,.82),transparent);transition:opacity .15s}
+.vtext{flex:1;min-width:0;padding-top:2px}
+.vtitle{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vmeta{font-size:12.5px;color:#b9c0cf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vside{display:flex;align-items:center;gap:8px;flex:none}
+.pill{height:30px;padding:0 10px;border-radius:15px;background:rgba(255,255,255,.14);color:#fff;font-size:12.5px;font-weight:600;
+  display:inline-flex;align-items:center;white-space:nowrap;text-decoration:none;font-variant-numeric:tabular-nums}
+.pill.hot{background:var(--accent);color:var(--accent-ink)}
+.vbtn{width:42px;height:42px;display:grid;place-items:center;border:0;border-radius:21px;background:rgba(255,255,255,.14);color:#fff;flex:none}
+.nav{position:absolute;top:50%;width:54px;height:96px;margin-top:-48px;display:grid;place-items:center;border:0;border-radius:14px;
+  background:rgba(0,0,0,.38);color:#fff;transition:opacity .15s}
+.nav.prev{left:max(8px,var(--sal))}
+.nav.next{right:max(8px,var(--sar))}
+.nav:disabled{opacity:.25}
+.viewer.clean .vtop,.viewer.clean .nav{opacity:0;pointer-events:none}
+@media (max-width:560px){.vtop{flex-wrap:wrap}.vtext{flex:1 1 60%}.vside{flex:1 1 100%;padding-left:52px}.nav{width:44px}.embed{width:min(calc(100vw - 108px),calc((100dvh - 110px) * var(--ar)))}}
+
+/* ---------- sheet ---------- */
+.sheet{position:fixed;top:0;right:0;bottom:0;left:0;z-index:60;display:grid;place-items:center;background:rgba(0,0,0,.6);padding:12px}
+.card{width:min(520px,100%);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;
+  padding:20px;display:grid;gap:14px}
+.card h2{margin:0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.addrow{display:flex;gap:8px}
+.field{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:16px}
+.sublist{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.sublist li{display:flex;align-items:center;gap:2px;height:36px;padding:0 4px 0 13px;border-radius:18px;background:var(--panel2);font-weight:600}
+.sublist button{width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:15px;background:transparent;color:var(--dim)}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:40px}
+.switch{-webkit-appearance:none;appearance:none;position:relative;flex:none;width:50px;height:30px;margin:0;border-radius:15px;background:var(--line);transition:background .15s;cursor:pointer}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch:checked{background:var(--accent)}
+.switch:checked::after{transform:translateX(20px)}
+.card details{color:var(--dim);font-size:13.5px}
+.card summary{cursor:pointer;padding:6px 0;color:var(--fg);font-size:15px}
+.card details p{margin:6px 0 10px}
+.card a{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(26px + var(--sab));transform:translateX(-50%);z-index:70;padding:10px 16px;border-radius:20px;
+  background:rgba(33,39,50,.96);border:1px solid var(--line);font-weight:600;pointer-events:none}
+@supports not (aspect-ratio:1){.tile{height:0;padding-top:100%}.embed{height:calc(min(100vw - 150px,(100vh - 110px) * var(--ar)) / var(--ar))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="bar" id="bar">
+  <nav class="chips" id="chips" aria-label="Subreddits"></nav>
+  <div class="tools">
+    <div class="seg" id="sortSeg" role="group" aria-label="Sort">
+      <button data-sort="hot">Hot</button><button data-sort="new">New</button><button data-sort="top">Top</button><button data-sort="rising">Rising</button>
+    </div>
+    <select class="pick" id="timePick" aria-label="Top posts from" hidden>
+      <option value="day">Today</option><option value="week">Week</option><option value="month">Month</option><option value="year">Year</option><option value="all">All time</option>
+    </select>
+    <button class="icon" id="refreshBtn" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg></button>
+    <button class="icon" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h8M18 7h2M4 17h2M12 17h8"/><circle cx="15" cy="7" r="2.6"/><circle cx="9" cy="17" r="2.6"/></svg></button>
+    <button class="icon go" id="addBtn" aria-label="Add subreddit"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="msg" id="msg"></div>
+  <div id="sentinel"></div>
+</main>
+
+<div class="viewer" id="viewer" hidden>
+  <div class="spin"></div>
+  <div class="stage" id="stage"></div>
+  <button class="nav prev" id="prevBtn" aria-label="Previous"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="nav next" id="nextBtn" aria-label="Next"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  <div class="vtop">
+    <button class="vbtn" id="closeBtn" aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="vtext"><div class="vtitle" id="vTitle"></div><div class="vmeta" id="vMeta"></div></div>
+    <div class="vside">
+      <span class="pill hot" id="vGal" hidden></span>
+      <span class="pill" id="vCount"></span>
+      <a class="pill vsrc" id="vSrc" target="_blank" rel="noopener noreferrer" hidden></a>
+      <a class="pill" id="vReddit" target="_blank" rel="noopener noreferrer">Comments</a>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-label="Subreddits and settings">
+    <h2>Subreddits</h2>
+    <form class="addrow" id="addForm">
+      <input class="field" id="addInput" placeholder="Add a subreddit, e.g. EarthPorn" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="go" aria-label="Subreddit name">
+      <button class="btn" type="submit">Add</button>
+    </form>
+    <ul class="sublist" id="subList"></ul>
+    <h2>Options</h2>
+    <label class="opt" for="nsfwChk">Show NSFW posts <input type="checkbox" class="switch" id="nsfwChk"></label>
+    <div class="opt">Tile size
+      <div class="seg" id="tileSeg" role="group" aria-label="Tile size"><button data-tile="s">Small</button><button data-tile="m">Medium</button><button data-tile="l">Large</button></div>
+    </div>
+    <details>
+      <summary>Reddit app ID (optional)</summary>
+      <p>Not needed unless Reddit refuses keyless requests. Create an <b>installed app</b> at <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener noreferrer">reddit.com/prefs/apps</a> (any redirect address works) and paste its ID. Subgrid then uses Reddit's anonymous app-only sign-in. No username or password is ever sent.</p>
+      <input class="field" id="cidInput" style="width:100%" placeholder="App ID" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="Reddit app ID">
+    </details>
+    <button class="btn quiet" id="doneBtn" type="button">Done</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+/* ---------- settings (kept in this browser only) ---------- */
+const KEY = 'subgrid.v1';
+const NAME_RE = /^[A-Za-z0-9][A-Za-z0-9_]{1,20}$/;
+const TILE = { s: 118, m: 168, l: 236 };
+const DEFAULTS = { subs: ['EarthPorn', 'itookapicture', 'spaceporn', 'aww', 'oddlysatisfying', 'gifs', 'videos'],
+  current: 'EarthPorn', sort: 'hot', t: 'week', nsfw: false, tile: 'm', muted: true, clientId: '' };
+let cfg;
+try { cfg = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { cfg = Object.assign({}, DEFAULTS); }
+cfg.subs = (Array.isArray(cfg.subs) ? cfg.subs : DEFAULTS.subs).filter(s => typeof s === 'string' && NAME_RE.test(s));
+if (!TILE[cfg.tile]) cfg.tile = 'm';
+if (!['hot', 'new', 'top', 'rising'].includes(cfg.sort)) cfg.sort = 'hot';
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) {} };
+
+const bar = $('bar'), chips = $('chips'), grid = $('grid'), msg = $('msg'), sentinel = $('sentinel');
+const viewer = $('viewer'), stage = $('stage'), sheet = $('sheet');
+
+/* ---------- Reddit access: anonymous, three routes tried in order ---------- */
+let preferred = null, tok = null, jsonpN = 0;
+
+function httpError(status, body) {
+  const e = new Error('HTTP ' + status);
+  e.status = status; e.reason = body && body.reason;
+  e.final = status === 404 || status === 429 || !!e.reason;
+  return e;
+}
+function tfetch(url, opt) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 15000);
+  return fetch(url, Object.assign({ signal: c.signal, credentials: 'omit' }, opt)).finally(() => clearTimeout(t));
+}
+async function read(r) {
+  let j = null;
+  try { j = await r.json(); } catch (e) {}
+  if (r.ok && j) return j;
+  throw httpError(r.status, j);
+}
+// 1. App-only OAuth token (only when an app ID is set). No user account involved.
+async function token() {
+  if (tok && tok.exp > Date.now() + 30000) return tok.v;
+  const r = await tfetch('https://www.reddit.com/api/v1/access_token', {
+    method: 'POST',
+    headers: { Authorization: 'Basic ' + btoa(cfg.clientId + ':') },
+    body: new URLSearchParams({ grant_type: 'https://oauth.reddit.com/grants/installed_client', device_id: 'DO_NOT_TRACK_THIS_DEVICE' })
+  });
+  const j = await read(r);
+  if (!j.access_token) throw httpError(401, null);
+  tok = { v: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000 };
+  return tok.v;
+}
+async function viaOAuth(path, qs) {
+  const t = await token();
+  const r = await tfetch('https://oauth.reddit.com' + path + '?' + qs, { headers: { Authorization: 'Bearer ' + t } });
+  if (r.status === 401) tok = null;
+  return read(r);
+}
+// 2. Public JSON, no cookies sent.
+async function viaFetch(path, qs) {
+  return read(await tfetch('https://www.reddit.com' + path + '.json?' + qs));
+}
+// 3. Same public JSON loaded as a script, for when cross-origin fetch is refused.
+function viaJsonp(path, qs) {
+  return new Promise((resolve, reject) => {
+    const cb = '__subgrid' + (jsonpN++), s = document.createElement('script');
+    const finish = (fn, v) => { clearTimeout(tm); window[cb] = () => { delete window[cb]; }; s.remove(); fn(v); };
+    const tm = setTimeout(() => finish(reject, new Error('timeout')), 15000);
+    window[cb] = d => { finish(resolve, d); delete window[cb]; };
+    s.onerror = () => finish(reject, new Error('blocked'));
+    s.src = 'https://www.reddit.com' + path + '.json?' + qs + '&jsonp=' + cb;
+    document.head.appendChild(s);
+  });
+}
+async function api(path, params) {
+  const qs = new URLSearchParams(Object.assign({ raw_json: 1 }, params)).toString();
+  let order = [viaFetch, viaJsonp];
+  if (cfg.clientId) order.unshift(viaOAuth);
+  if (preferred && order.includes(preferred)) order = [preferred].concat(order.filter(t => t !== preferred));
+  let err;
+  for (const t of order) {
+    try { const j = await t(path, qs); preferred = t; return j; }
+    catch (e) { err = e; if (e.final) break; }
+  }
+  throw err;
+}
+function explain(e, f) {
+  const who = f.all ? 'One of your subreddits' : 'r/' + f.name;
+  if (e.code === 'notfound' || e.status === 404) return who + " wasn't found. Check the spelling.";
+  if (e.reason === 'private') return who + ' is private.';
+  if (e.reason === 'banned') return who + ' has been banned.';
+  if (e.reason) return who + ' is restricted by Reddit (' + e.reason + ') and needs a signed-in account.';
+  if (e.status === 429) return 'Reddit is rate-limiting this connection. Wait a minute, then retry.';
+  return "Couldn't reach Reddit. Check your connection and retry. If it keeps failing, Reddit may be refusing keyless requests from this network: add an app ID in Settings.";
+}
+
+/* ---------- turning a Reddit post into slides ---------- */
+const clean = u => (typeof u === 'string' && /^https?:\/\//i.test(u)) ? u.replace(/&amp;/g, '&') : '';
+const norm = a => { if (!a) return null; const url = clean(a.url || a.u || a.gif); return url ? { url, w: a.width || a.x || 0, h: a.height || a.y || 0 } : null; };
+const normAll = list => (list || []).map(norm).filter(Boolean);
+function choose(cands, target) {
+  const c = (cands || []).filter(Boolean).sort((a, b) => a.w - b.w);
+  return c.find(x => x.w >= target) || c[c.length - 1] || null;
+}
+const urlOf = c => (c && c.url) || '';
+const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
+const thumbTarget = () => TILE[cfg.tile] * 1.25 * dpr();
+
+function parsePost(d) {
+  if (!d || d.removed_by_category) return null;
+  const src = (Array.isArray(d.crosspost_parent_list) && d.crosspost_parent_list[0]) || d;
+  const url = clean(src.url_overridden_by_dest || src.url);
+  let host = '', path = '', U = null;
+  try { U = new URL(url); host = U.hostname.replace(/^www\./, '').toLowerCase(); path = U.pathname; } catch (e) {}
+  const on = h => host === h || host.endsWith('.' + h);
+  const pv = src.preview && src.preview.images && src.preview.images[0];
+  const pvs = pv ? normAll((pv.resolutions || []).concat(pv.source)) : [];
+  const big = () => urlOf(choose(pvs, 900));
+  const dim = pv && pv.source ? { w: pv.source.width || 0, h: pv.source.height || 0 } : { w: 0, h: 0 };
+  const TT = thumbTarget();
+  const slides = [];
+  let kind = 'image';
+  const rv = (src.secure_media && src.secure_media.reddit_video) || (src.media && src.media.reddit_video);
+  const rvp = src.preview && src.preview.reddit_video_preview;
+  const mm = src.media_metadata;
+
+  if (mm && (src.is_gallery || src.is_self)) {
+    const ids = (src.gallery_data && Array.isArray(src.gallery_data.items)) ? src.gallery_data.items.map(i => i.media_id) : Object.keys(mm);
+    for (const id of ids) {
+      const m = mm[id];
+      if (!m || m.status !== 'valid') continue;
+      const ps = normAll(m.p), lo = urlOf(choose(ps, TT)), poster = urlOf(choose(ps, 900));
+      if (m.e === 'RedditVideo') {
+        slides.push({ type: 'video', hls: clean(m.hlsUrl) || 'https://v.redd.it/' + id + '/HLSPlaylist.m3u8', mp4: '', gif: !!m.isGif, w: m.x, h: m.y, poster, cands: ps, lo });
+      } else if (m.s) {
+        const s = norm(m.s), mp4 = clean(m.s.mp4);
+        if (mp4) slides.push({ type: 'video', mp4, gif: true, w: m.s.x, h: m.s.y, poster, cands: ps, lo });
+        else if (s) slides.push({ type: 'image', cands: ps.concat(s), orig: 'https://i.redd.it/' + id + '.' + String(m.m || 'image/jpg').split('/')[1], w: s.w, h: s.h, lo });
+      }
+    }
+    if (slides.length > 1) kind = 'gallery';
+    else if (slides[0] && slides[0].type === 'video') kind = slides[0].gif ? 'gif' : 'video';
+  } else if (rv && (rv.hls_url || rv.fallback_url)) {
+    slides.push({ type: 'video', hls: clean(rv.hls_url), mp4: clean(rv.fallback_url), gif: !!rv.is_gif, w: rv.width, h: rv.height, poster: big() });
+    kind = rv.is_gif ? 'gif' : 'video';
+  } else if (/\.(mp4|gifv|webm|mov)$/i.test(path)) {
+    const gifv = /\.gifv$/i.test(path);
+    slides.push({ type: 'video', mp4: on('imgur.com') ? url.replace(/\.(gifv|webm)(?=$|\?)/i, '.mp4') : url, gif: gifv, w: dim.w, h: dim.h, poster: big() });
+    kind = gifv ? 'gif' : 'video';
+  } else if (/\.(jpe?g|png|webp|gif|avif)$/i.test(path) || src.post_hint === 'image') {
+    const isGif = /\.gif$/i.test(path);
+    const mv = pv && pv.variants && pv.variants.mp4;
+    const mc = isGif && mv ? choose(normAll((mv.resolutions || []).concat(mv.source)), 900) : null;
+    if (mc) slides.push({ type: 'video', mp4: mc.url, gif: true, w: dim.w, h: dim.h, poster: big() });
+    else slides.push({ type: 'image', cands: isGif ? [] : pvs, orig: url, w: dim.w, h: dim.h });
+    if (isGif) kind = 'gif';
+  } else if (on('redgifs.com') && /\/(watch|ifr)\/[a-z0-9]+/i.test(path)) {
+    slides.push({ type: 'embed', src: 'https://www.redgifs.com/ifr/' + path.match(/\/(?:watch|ifr)\/([a-z0-9]+)/i)[1].toLowerCase(), w: dim.w, h: dim.h, poster: big() });
+    kind = 'video';
+  } else if (on('youtube.com') || on('youtu.be') || on('youtube-nocookie.com')) {
+    const id = on('youtu.be') ? path.split('/')[1] : (U.searchParams.get('v') || (path.match(/\/(?:shorts|embed|live)\/([\w-]{6,})/) || [])[1]);
+    if (id && /^[\w-]{6,}$/.test(id)) {
+      slides.push({ type: 'embed', yt: true, src: 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1&autoplay=1&rel=0', w: 16, h: 9, poster: big() || 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg' });
+      kind = 'video';
+    }
+  } else if (on('streamable.com')) {
+    const id = path.split('/').filter(Boolean).pop();
+    if (id && /^[a-z0-9]+$/i.test(id)) { slides.push({ type: 'embed', src: 'https://streamable.com/e/' + id + '?autoplay=1', w: dim.w || 16, h: dim.h || 9, poster: big() }); kind = 'video'; }
+  } else if (rvp && (rvp.hls_url || rvp.fallback_url)) {
+    slides.push({ type: 'video', hls: clean(rvp.hls_url), mp4: clean(rvp.fallback_url), gif: true, w: rvp.width, h: rvp.height, poster: big() });
+    kind = 'video';
+  } else if (pvs.length && url && src.post_hint === 'rich:video') {
+    slides.push({ type: 'link', href: url, poster: big(), w: dim.w, h: dim.h });
+    kind = 'video';
+  } else if (pvs.length && on('imgur.com')) {
+    slides.push({ type: 'image', cands: pvs, orig: '', w: dim.w, h: dim.h });
+  }
+  if (!slides.length) return null;
+
+  const s0 = slides[0];
+  const thumb = urlOf(choose(s0.cands && s0.cands.length ? s0.cands : pvs, TT)) || s0.poster || clean(d.thumbnail) || clean(src.thumbnail) || (s0.type === 'image' ? s0.orig : '');
+  if (!s0.lo) s0.lo = thumb;
+  return {
+    id: d.name || d.id, title: d.title || '', sub: d.subreddit || '', author: d.author || '', score: d.score || 0,
+    nsfw: !!(d.over_18 || src.over_18), permalink: 'https://www.reddit.com' + (d.permalink || ''),
+    ext: host && !on('redd.it') && !on('reddit.com') ? url : '', host, kind, thumb, slides
+  };
+}
+
+/* ---------- feeds ---------- */
+const feeds = new Map();
+let feed = null;
+
+function currentFeed(fresh) {
+  if (!cfg.subs.length) return null;
+  if (cfg.current !== '*' && !cfg.subs.includes(cfg.current)) cfg.current = cfg.subs[0];
+  const all = cfg.current === '*';
+  const name = all ? cfg.subs.join('+') : cfg.current;
+  const t = cfg.sort === 'top' ? cfg.t : '';
+  const key = [name, cfg.sort, t].join('|');
+  let f = feeds.get(key);
+  if (!f || fresh || Date.now() - f.ts > 10 * 60e3) {
+    f = { key, name, all, path: '/r/' + name + '/' + cfg.sort, t, posts: [], slides: [], seen: new Set(), after: null,
+      done: false, loading: false, error: null, stalled: false, hidden: 0, scanned: 0, ts: Date.now() };
+    feeds.set(key, f);
+  }
+  return f;
+}
+
+async function loadMore(f) {
+  if (!f || f.loading || f.done) return;
+  f.loading = true; f.error = null; f.stalled = false;
+  if (f === feed) renderState();
+  let added = 0;
+  try {
+    for (let page = 0; page < 4 && !f.done && added < 12; page++) {
+      const params = { limit: f.after ? 100 : 50 };
+      if (f.after) params.after = f.after;
+      if (f.t) params.t = f.t;
+      const j = await api(f.path, params);
+      const kids = j && j.data && j.data.children;
+      if (!Array.isArray(kids) || (kids.length && kids[0].kind !== 't3')) { const e = new Error('not found'); e.code = 'notfound'; throw e; }
+      const from = f.posts.length;
+      for (const c of kids) {
+        const d = c.data;
+        if (!d || f.seen.has(d.name)) continue;
+        f.seen.add(d.name); f.scanned++;
+        const p = parsePost(d);
+        if (!p) continue;
+        if (p.nsfw && !cfg.nsfw) { f.hidden++; continue; }
+        p.first = f.slides.length;
+        p.slides.forEach((s, k) => { s.p = f.posts.length; s.k = k; f.slides.push(s); });
+        f.posts.push(p);
+      }
+      f.after = j.data.after || null;
+      if (!f.after || !kids.length) f.done = true;
+      added += f.posts.length - from;
+      if (f === feed) appendTiles(f, from);
+      if (!f.posts.length && f.hidden >= 10) break;
+    }
+    if (!added && !f.done) f.stalled = true;
+  } catch (e) { f.error = e; }
+  f.loading = false;
+  if (f !== feed) return;
+  renderState();
+  if (!viewer.hidden) {
+    if (wantNext && vi + 1 < f.slides.length) { wantNext = false; show(vi + 1, 1); } else updateCount();
+  }
+  if (!f.done && !f.error && !f.stalled && sentinel.getBoundingClientRect().top < innerHeight + 1400) loadMore(f);
+}
+
+/* ---------- grid ---------- */
+const ICON_PLAY = '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M7 4v16l13-8z" fill="currentColor"/></svg>';
+const ICON_STACK = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><rect x="3" y="8" width="13" height="13" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg>';
+
+function appendTiles(f, from) {
+  grid.querySelectorAll('.sk').forEach(n => n.remove());
+  const frag = document.createDocumentFragment();
+  for (let i = from; i < f.posts.length; i++) {
+    const p = f.posts[i];
+    const b = el('button', 'tile');
+    b.dataset.i = i;
+    b.setAttribute('aria-label', p.title);
+    if (p.thumb) {
+      const im = document.createElement('img');
+      im.loading = 'lazy'; im.decoding = 'async'; im.alt = '';
+      im.onerror = () => { im.remove(); b.classList.add('noimg'); };
+      im.src = p.thumb;
+      b.append(im);
+    } else b.classList.add('noimg');
+    if (p.kind !== 'image') {
+      const bd = el('span', 'badge');
+      if (p.kind === 'gallery') { bd.innerHTML = ICON_STACK; bd.append(String(p.slides.length)); }
+      else if (p.kind === 'gif') bd.textContent = 'GIF';
+      else bd.innerHTML = ICON_PLAY;
+      b.append(bd);
+    }
+    b.append(el('span', 'cap', (f.all ? p.sub + ' · ' : '') + p.title));
+    frag.append(b);
+  }
+  grid.append(frag);
+}
+function skeleton() {
+  if (grid.children.length) return;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 24; i++) frag.append(el('div', 'tile sk'));
+  grid.append(frag);
+}
+function say(text, label, fn, quiet) {
+  msg.append(el('p', '', text));
+  if (label) { const b = el('button', 'btn' + (quiet ? ' quiet' : ''), label); b.onclick = fn; msg.append(b); }
+}
+function renderState() {
+  const f = feed;
+  bar.classList.toggle('loading', !!(f && f.loading));
+  msg.textContent = '';
+  if (!f) { grid.textContent = ''; say('Add a subreddit to get started.', 'Add subreddit', () => openSheet(true)); return; }
+  if (f.loading) { if (!f.posts.length) skeleton(); return; }
+  grid.querySelectorAll('.sk').forEach(n => n.remove());
+  const idle = f.done || f.stalled;
+  if (f.error) say(explain(f.error, f), 'Retry', () => loadMore(f));
+  else if (idle && !f.posts.length && f.hidden) say('Everything found here is marked NSFW (' + f.hidden + ' posts hidden).', 'Show NSFW', () => setNsfw(true));
+  else if (f.stalled) say('No pictures or videos in ' + f.scanned + ' posts so far.', 'Keep looking', () => loadMore(f), true);
+  else if (f.done) {
+    say(f.posts.length ? 'End of feed \u00b7 ' + f.posts.length + ' posts' : 'No pictures or videos here.');
+    if (f.hidden) say(f.hidden + ' NSFW post' + (f.hidden > 1 ? 's' : '') + ' hidden.');
+  }
+}
+function openFeed(fresh) {
+  feed = currentFeed(fresh);
+  grid.textContent = '';
+  window.scrollTo(0, 0);
+  renderBar();
+  if (feed) appendTiles(feed, 0);
+  renderState();
+  if (feed && !feed.posts.length) loadMore(feed);
+}
+function renderBar() {
+  chips.textContent = '';
+  const mk = (name, label) => { const b = el('button', 'chip' + (cfg.current === name ? ' on' : ''), label); b.dataset.sub = name; return b; };
+  if (cfg.subs.length > 1) chips.append(mk('*', 'All'));
+  cfg.subs.forEach(s => chips.append(mk(s, s)));
+  const on = chips.querySelector('.on');
+  if (on) chips.scrollLeft = Math.max(0, on.offsetLeft - chips.offsetLeft - (chips.clientWidth - on.offsetWidth) / 2);
+  $('sortSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.sort === cfg.sort));
+  $('timePick').hidden = cfg.sort !== 'top';
+  $('timePick').value = cfg.t;
+}
+
+chips.addEventListener('click', e => {
+  const b = e.target.closest('.chip');
+  if (!b) return;
+  if (b.dataset.sub === cfg.current) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  cfg.current = b.dataset.sub; save(); openFeed();
+});
+$('sortSeg').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b || b.dataset.sort === cfg.sort) return;
+  cfg.sort = b.dataset.sort; save(); openFeed();
+});
+$('timePick').addEventListener('change', e => { cfg.t = e.target.value; save(); openFeed(); });
+$('refreshBtn').addEventListener('click', () => openFeed(true));
+grid.addEventListener('click', e => {
+  const t = e.target.closest('.tile');
+  if (!t || !t.dataset.i || !feed) return;
+  openViewer(feed.posts[+t.dataset.i].first);
+});
+new IntersectionObserver(es => { if (es[0].isIntersecting && feed && !feed.error && !feed.stalled) loadMore(feed); }, { rootMargin: '1400px 0px' }).observe(sentinel);
+
+/* ---------- viewer ---------- */
+let vi = -1, lockY = 0, wantNext = false, pre = null, g = null;
+const fmtN = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? Math.round(n / 1e3) + 'k' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n);
+
+function pickImage(s) {
+  const a = Math.max(innerWidth, innerHeight), b = Math.min(innerWidth, innerHeight);
+  const r = s.w && s.h ? s.w / s.h : 0;
+  const shown = r ? Math.max(Math.min(a, b * r), Math.min(b, a * r)) : a;
+  return urlOf(choose(s.cands, shown * dpr() * 0.85)) || s.orig || '';
+}
+function chain(img, urls, onFail) {
+  const list = urls.filter((u, i) => u && urls.indexOf(u) === i);
+  let i = 0;
+  const next = () => { if (i < list.length) img.src = list[i++]; else { img.onerror = null; onFail(); } };
+  img.onerror = next;
+  next();
+}
+function clearStage() {
+  stage.querySelectorAll('video').forEach(v => { v.onerror = v.onvolumechange = null; try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {} });
+  stage.textContent = '';
+}
+function note(text, p) {
+  viewer.classList.remove('busy');
+  clearStage();
+  const box = el('div', 'note');
+  box.append(el('p', '', text));
+  const a = el('a', 'ext', 'Open on Reddit');
+  a.href = p.permalink; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  box.append(a);
+  stage.append(box);
+}
+function show(i, dir) {
+  const f = feed, s = f && f.slides[i];
+  if (!s) return;
+  vi = i;
+  const p = f.posts[s.p], lo = s.lo || '';
+  const live = () => vi === i && !viewer.hidden && feed === f;
+  clearStage();
+  viewer.classList.remove('busy');
+
+  if (s.type === 'image') {
+    viewer.classList.add('busy');
+    if (lo) { const ph = el('img', 'ph'); ph.alt = ''; ph.src = lo; stage.append(ph); }
+    const im = el('img', 'media');
+    im.alt = p.title; im.decoding = 'async';
+    im.onload = () => { if (!live()) return; viewer.classList.remove('busy'); const ph = stage.querySelector('.ph'); if (ph) ph.remove(); };
+    chain(im, [pickImage(s), s.orig, lo], () => { if (live()) note("This image couldn't be loaded.", p); });
+    stage.append(im);
+  } else if (s.type === 'video') {
+    viewer.classList.add('busy');
+    const v = el('video', 'media');
+    v.setAttribute('playsinline', ''); v.playsInline = true;
+    v.loop = true; v.autoplay = true; v.preload = 'auto';
+    v.controls = !s.gif;
+    v.muted = s.gif ? true : !!cfg.muted;
+    if (s.poster || lo) v.poster = s.poster || lo;
+    const srcs = [];
+    if (s.hls && v.canPlayType('application/vnd.apple.mpegurl')) srcs.push(s.hls);
+    if (s.mp4) srcs.push(s.mp4);
+    let n = 0;
+    const tryNext = () => {
+      if (!live()) return;
+      if (n >= srcs.length) return note("This video can't be played here.", p);
+      v.src = srcs[n++];
+      const pr = v.play();
+      if (pr) pr.catch(e => { if (e && e.name === 'NotAllowedError' && !v.muted && live()) { v.muted = true; v.play().catch(() => {}); } });
+    };
+    v.onerror = tryNext;
+    v.onloadeddata = v.onplaying = () => { if (live()) viewer.classList.remove('busy'); };
+    v.onvolumechange = () => { if (!s.gif && stage.contains(v) && cfg.muted !== v.muted) { cfg.muted = v.muted; save(); } };
+    stage.append(v);
+    tryNext();
+  } else if (s.type === 'embed') {
+    const box = el('div', 'embed');
+    box.style.setProperty('--ar', s.w && s.h ? (s.w / s.h).toFixed(4) : '1.7778');
+    const fr = document.createElement('iframe');
+    fr.allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
+    fr.setAttribute('allowfullscreen', '');
+    fr.referrerPolicy = s.yt ? 'strict-origin-when-cross-origin' : 'no-referrer';
+    fr.title = p.title;
+    fr.src = s.src;
+    box.append(fr);
+    stage.append(box);
+  } else {
+    if (s.poster || lo) { const ph = el('img', 'ph sharp'); ph.alt = ''; ph.src = s.poster || lo; stage.append(ph); }
+    const a = el('a', 'ext', 'Open on ' + (p.host || 'source'));
+    a.href = s.href; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    stage.append(a);
+  }
+
+  $('vTitle').textContent = p.title;
+  $('vMeta').textContent = 'r/' + p.sub + ' · u/' + p.author + ' · ' + fmtN(p.score) + ' points';
+  $('vGal').hidden = p.slides.length < 2;
+  $('vGal').textContent = (s.k + 1) + ' of ' + p.slides.length;
+  $('vReddit').href = p.permalink;
+  $('vSrc').hidden = !p.ext;
+  if (p.ext) { $('vSrc').href = p.ext; $('vSrc').textContent = p.host; }
+  $('prevBtn').disabled = i === 0;
+  updateCount();
+
+  if (dir && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    stage.classList.add('drag');
+    stage.style.transform = 'translateX(' + dir * 44 + 'px)'; stage.style.opacity = '.3';
+    requestAnimationFrame(() => requestAnimationFrame(() => { stage.classList.remove('drag'); stage.style.transform = ''; stage.style.opacity = ''; }));
+  } else { stage.style.transform = ''; stage.style.opacity = ''; }
+
+  const nx = f.slides[i + 1];
+  if (nx && nx.type === 'image') { pre = new Image(); pre.src = pickImage(nx); }
+  if (i >= f.slides.length - 6) loadMore(f);
+}
+function updateCount() {
+  const f = feed, s = f && f.slides[vi];
+  if (s) $('vCount').textContent = (s.p + 1) + ' / ' + f.posts.length + (f.done ? '' : '+');
+}
+function go(d) {
+  const f = feed, n = vi + d;
+  if (!f || n < 0) return;
+  if (n >= f.slides.length) {
+    if (f.done) return toast('End of feed');
+    if (f.error || f.stalled) return toast('No more posts loaded');
+    wantNext = true; toast('Loading more…'); loadMore(f);
+    return;
+  }
+  show(n, d);
+}
+function openViewer(i) {
+  if (!viewer.hidden) return;
+  lockY = window.scrollY;
+  document.body.style.cssText = 'position:fixed;left:0;right:0;top:' + (-lockY) + 'px';
+  viewer.classList.remove('clean');
+  viewer.hidden = false;
+  wantNext = false;
+  try { history.pushState({ subgridViewer: 1 }, ''); } catch (e) {}
+  show(i, 0);
+}
+function closeViewer(fromBack) {
+  if (viewer.hidden) return;
+  const s = feed && feed.slides[vi];
+  clearStage();
+  viewer.hidden = true; vi = -1; wantNext = false;
+  document.body.style.cssText = '';
+  window.scrollTo(0, lockY);
+  if (s) {
+    const tile = grid.querySelector('.tile[data-i="' + s.p + '"]');
+    if (tile) {
+      const r = tile.getBoundingClientRect();
+      if (r.top < bar.offsetHeight || r.bottom > innerHeight) tile.scrollIntoView({ block: 'center' });
+      tile.focus({ preventScroll: true });
+    }
+  }
+  if (!fromBack && history.state && history.state.subgridViewer) history.back();
+}
+window.addEventListener('popstate', () => closeViewer(true));
+$('closeBtn').addEventListener('click', () => closeViewer());
+$('prevBtn').addEventListener('click', () => go(-1));
+$('nextBtn').addEventListener('click', () => go(1));
+stage.addEventListener('click', e => {
+  if (e.target.closest('a,iframe')) return;
+  if (e.target.tagName === 'VIDEO' && e.target.controls) return;
+  viewer.classList.toggle('clean');
+});
+
+// Swipe left/right to move, swipe down to close. Disabled while pinch-zoomed so panning still works.
+const zoomed = () => window.visualViewport && window.visualViewport.scale > 1.02;
+viewer.addEventListener('touchstart', e => {
+  g = null;
+  if (e.touches.length !== 1 || zoomed()) return;
+  const t = e.touches[0];
+  if (t.clientX < 22 || t.clientX > innerWidth - 22) return;
+  if (e.target.closest('.vtop,.nav,a')) return;
+  if (e.target.tagName === 'VIDEO' && e.target.controls && t.clientY > e.target.getBoundingClientRect().bottom - 76) return;
+  g = { x: t.clientX, y: t.clientY, dx: 0, dy: 0, at: Date.now(), axis: '' };
+}, { passive: true });
+viewer.addEventListener('touchmove', e => {
+  if (!g) return;
+  if (e.touches.length !== 1) { g = null; stage.classList.remove('drag'); stage.style.transform = ''; stage.style.opacity = ''; return; }
+  const t = e.touches[0];
+  g.dx = t.clientX - g.x; g.dy = t.clientY - g.y;
+  if (!g.axis && (Math.abs(g.dx) > 10 || Math.abs(g.dy) > 10)) { g.axis = Math.abs(g.dx) > Math.abs(g.dy) ? 'x' : 'y'; stage.classList.add('drag'); }
+  if (g.axis === 'x') stage.style.transform = 'translateX(' + g.dx + 'px)';
+  else if (g.axis === 'y' && g.dy > 0) { stage.style.transform = 'translateY(' + g.dy + 'px)'; stage.style.opacity = String(Math.max(.3, 1 - g.dy / 400)); }
+}, { passive: true });
+const endTouch = () => {
+  if (!g) return;
+  const { dx, dy, axis } = g, quick = Date.now() - g.at < 300;
+  g = null;
+  stage.classList.remove('drag');
+  if (axis === 'x' && (Math.abs(dx) > 70 || (quick && Math.abs(dx) > 28))) {
+    const d = dx < 0 ? 1 : -1, before = vi;
+    go(d);
+    if (vi === before) { stage.style.transform = ''; stage.style.opacity = ''; }
+  } else if (axis === 'y' && (dy > 110 || (quick && dy > 50))) closeViewer();
+  else { stage.style.transform = ''; stage.style.opacity = ''; }
+};
+viewer.addEventListener('touchend', endTouch);
+viewer.addEventListener('touchcancel', () => { g = null; stage.classList.remove('drag'); stage.style.transform = ''; stage.style.opacity = ''; });
+
+document.addEventListener('keydown', e => {
+  if (!sheet.hidden) { if (e.key === 'Escape') closeSheet(); return; }
+  if (viewer.hidden) return;
+  if (e.key === 'ArrowRight') go(1);
+  else if (e.key === 'ArrowLeft') go(-1);
+  else if (e.key === 'Escape') closeViewer();
+  else if (e.key === ' ') { const v = stage.querySelector('video'); if (v) { e.preventDefault(); if (v.paused) v.play().catch(() => {}); else v.pause(); } }
+});
+
+/* ---------- subreddits + settings sheet ---------- */
+function renderSheet() {
+  const ul = $('subList');
+  ul.textContent = '';
+  cfg.subs.forEach(s => {
+    const li = el('li', '', s), b = el('button');
+    b.setAttribute('aria-label', 'Remove ' + s);
+    b.dataset.rm = s;
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    li.append(b); ul.append(li);
+  });
+  $('nsfwChk').checked = !!cfg.nsfw;
+  $('cidInput').value = cfg.clientId || '';
+  $('tileSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.tile === cfg.tile));
+}
+function openSheet(focusAdd) {
+  renderSheet();
+  sheet.hidden = false;
+  if (focusAdd) $('addInput').focus();
+}
+function closeSheet() {
+  if (sheet.hidden) return;
+  sheet.hidden = true;
+  $('addInput').blur();
+  const cid = $('cidInput').value.trim();
+  if (cid !== cfg.clientId) { cfg.clientId = cid; tok = null; preferred = null; save(); if (feed && feed.error) loadMore(feed); }
+}
+function setNsfw(on) {
+  cfg.nsfw = !!on; save();
+  feeds.clear();
+  openFeed(true);
+}
+function applyTile() { document.documentElement.style.setProperty('--tile', TILE[cfg.tile] + 'px'); }
+
+$('addBtn').addEventListener('click', () => openSheet(true));
+$('setBtn').addEventListener('click', () => openSheet(false));
+$('doneBtn').addEventListener('click', closeSheet);
+sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
+$('addForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const inp = $('addInput');
+  const names = inp.value.split(/[\s,+]+/).map(x => x.trim().replace(/^.*\/r\//i, '').replace(/^\/?r\//i, '').replace(/[/?#].*$/, '')).filter(Boolean);
+  const good = names.filter(n => NAME_RE.test(n));
+  if (!good.length) { toast(names.length ? "That doesn't look like a subreddit name" : 'Type a subreddit name'); return; }
+  let first = '';
+  good.forEach(n => {
+    const have = cfg.subs.find(s => s.toLowerCase() === n.toLowerCase());
+    if (!have) cfg.subs.push(n);
+    if (!first) first = have || n;
+  });
+  cfg.current = first; save();
+  inp.value = '';
+  closeSheet();
+  openFeed();
+});
+$('subList').addEventListener('click', e => {
+  const b = e.target.closest('button[data-rm]');
+  if (!b) return;
+  cfg.subs = cfg.subs.filter(s => s !== b.dataset.rm);
+  const changed = cfg.current === b.dataset.rm || cfg.current === '*';
+  if (cfg.current === b.dataset.rm || cfg.subs.length < 2) cfg.current = cfg.subs[0] || '';
+  save(); renderSheet();
+  if (changed || !cfg.subs.length) openFeed(); else renderBar();
+});
+$('nsfwChk').addEventListener('change', e => setNsfw(e.target.checked));
+$('tileSeg').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  cfg.tile = b.dataset.tile; save(); applyTile(); renderSheet();
+});
+
+let toastT = 0;
+function toast(text) {
+  const t = $('toast');
+  t.textContent = text; t.hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.hidden = true; }, 1700);
+}
+
+applyTile();
+openFeed();
+})();
+</script>
+</body>
+</html>
