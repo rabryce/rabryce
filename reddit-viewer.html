@@ -55,7 +55,8 @@ svg{display:block}
 .pick{height:38px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font-weight:600}
 .icon{width:38px;height:38px;display:grid;place-items:center;border-radius:10px;border:0;background:var(--panel2)}
 .icon.go{background:var(--accent);color:var(--accent-ink)}
-@media (max-width:1000px){.chips{flex-basis:100%}.tools{flex:1 1 100%;justify-content:flex-start;margin-left:0}#refreshBtn{margin-left:auto}}
+.icon.user{color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+@media (max-width:1000px){.chips{flex-basis:100%}.tools{flex:1 1 100%;justify-content:flex-start;margin-left:0}#modeBtn{margin-left:auto}}
 
 /* ---------- grid ---------- */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--tile),1fr));gap:var(--gap);
@@ -124,9 +125,16 @@ svg{display:block}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .15s}
 .switch:checked{background:var(--accent)}
 .switch:checked::after{transform:translateX(20px)}
+.acct{display:grid;gap:10px}
+.hint{margin:0;color:var(--dim);font-size:13.5px}
+.warn{margin:0;padding:10px 12px;border-radius:10px;background:rgba(255,106,61,.16);font-size:13.5px}
 .card details{color:var(--dim);font-size:13.5px}
 .card summary{cursor:pointer;padding:6px 0;color:var(--fg);font-size:15px}
-.card details p{margin:6px 0 10px}
+.card details p{margin:8px 0 2px}
+.card ol{margin:4px 0;padding-left:20px;display:grid;gap:7px}
+.card code{padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--fg);font-size:12.5px;word-break:break-all;-webkit-user-select:all;user-select:all}
+.mini{height:28px;padding:0 11px;margin-left:4px;border:0;border-radius:14px;background:var(--panel2);font-size:12.5px;font-weight:600}
+.btn:disabled{opacity:.6}
 .card a{color:var(--accent)}
 .toast{position:fixed;left:50%;bottom:calc(26px + var(--sab));transform:translateX(-50%);z-index:70;padding:10px 16px;border-radius:20px;
   background:rgba(33,39,50,.96);border:1px solid var(--line);font-weight:600;pointer-events:none}
@@ -145,6 +153,7 @@ svg{display:block}
     <select class="pick" id="timePick" aria-label="Top posts from" hidden>
       <option value="day">Today</option><option value="week">Week</option><option value="month">Month</option><option value="year">Year</option><option value="all">All time</option>
     </select>
+    <button class="icon" id="modeBtn" aria-label="Account"></button>
     <button class="icon" id="refreshBtn" aria-label="Refresh"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg></button>
     <button class="icon" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h8M18 7h2M4 17h2M12 17h8"/><circle cx="15" cy="7" r="2.6"/><circle cx="9" cy="17" r="2.6"/></svg></button>
     <button class="icon go" id="addBtn" aria-label="Add subreddit"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -182,16 +191,38 @@ svg{display:block}
       <button class="btn" type="submit">Add</button>
     </form>
     <ul class="sublist" id="subList"></ul>
+
+    <h2>Reddit account</h2>
+    <p class="warn" id="acctMsg" hidden></p>
+    <div class="acct" id="acctOut">
+      <p class="hint">You're browsing anonymously. Sign in to get your home feed and subscriptions.</p>
+      <div class="addrow">
+        <input class="field" id="cidInput" placeholder="Reddit app ID" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="Reddit app ID">
+        <button class="btn" id="signInBtn" type="button">Sign in</button>
+      </div>
+      <details>
+        <summary>Where do I get an app ID?</summary>
+        <ol>
+          <li>Open <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener noreferrer">reddit.com/prefs/apps</a> and create an app. Reddit may first ask you to accept its developer terms or request API access.</li>
+          <li>Choose the type <b>installed app</b>.</li>
+          <li>Set the redirect URI to exactly <code id="redirUri"></code> <button class="mini" id="copyBtn" type="button">Copy</button></li>
+          <li>Paste the ID shown under the app's name into the box above.</li>
+        </ol>
+        <p>This is a one-off. You sign in on Reddit's own page, so Subgrid never sees your password, and it only asks for permission to read.</p>
+      </details>
+    </div>
+    <div class="acct" id="acctIn" hidden>
+      <div class="opt"><span id="acctName"></span><button class="btn quiet" id="signOutBtn" type="button">Sign out</button></div>
+      <label class="opt" for="anonChk">Browse anonymously <input type="checkbox" class="switch" id="anonChk"></label>
+      <p class="hint">Anonymous mode makes every request without your account, so your home feed is hidden until you switch back. The account button in the toolbar switches it with one tap.</p>
+      <button class="btn quiet" id="importBtn" type="button">Add my subscribed subreddits</button>
+    </div>
+
     <h2>Options</h2>
     <label class="opt" for="nsfwChk">Show NSFW posts <input type="checkbox" class="switch" id="nsfwChk"></label>
     <div class="opt">Tile size
       <div class="seg" id="tileSeg" role="group" aria-label="Tile size"><button data-tile="s">Small</button><button data-tile="m">Medium</button><button data-tile="l">Large</button></div>
     </div>
-    <details>
-      <summary>Reddit app ID (optional)</summary>
-      <p>Not needed unless Reddit refuses keyless requests. Create an <b>installed app</b> at <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener noreferrer">reddit.com/prefs/apps</a> (any redirect address works) and paste its ID. Subgrid then uses Reddit's anonymous app-only sign-in. No username or password is ever sent.</p>
-      <input class="field" id="cidInput" style="width:100%" placeholder="App ID" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="Reddit app ID">
-    </details>
     <button class="btn quiet" id="doneBtn" type="button">Done</button>
   </div>
 </div>
@@ -209,19 +240,31 @@ const KEY = 'subgrid.v1';
 const NAME_RE = /^[A-Za-z0-9][A-Za-z0-9_]{1,20}$/;
 const TILE = { s: 118, m: 168, l: 236 };
 const DEFAULTS = { subs: ['EarthPorn', 'itookapicture', 'spaceporn', 'aww', 'oddlysatisfying', 'gifs', 'videos'],
-  current: 'EarthPorn', sort: 'hot', t: 'week', nsfw: false, tile: 'm', muted: true, clientId: '' };
+  current: 'EarthPorn', sort: 'hot', t: 'week', nsfw: false, tile: 'm', muted: true, clientId: '', anon: false, auth: null };
 let cfg;
 try { cfg = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { cfg = Object.assign({}, DEFAULTS); }
 cfg.subs = (Array.isArray(cfg.subs) ? cfg.subs : DEFAULTS.subs).filter(s => typeof s === 'string' && NAME_RE.test(s));
 if (!TILE[cfg.tile]) cfg.tile = 'm';
+if (!cfg.auth || typeof cfg.auth !== 'object') cfg.auth = null;
+if (typeof cfg.clientId !== 'string') cfg.clientId = '';
 if (!['hot', 'new', 'top', 'rising'].includes(cfg.sort)) cfg.sort = 'hot';
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) {} };
 
 const bar = $('bar'), chips = $('chips'), grid = $('grid'), msg = $('msg'), sentinel = $('sentinel');
 const viewer = $('viewer'), stage = $('stage'), sheet = $('sheet');
 
-/* ---------- Reddit access: anonymous, three routes tried in order ---------- */
-let preferred = null, tok = null, jsonpN = 0;
+/* ---------- Reddit access ---------- */
+// Signed-in mode: every request carries your own OAuth token.
+// Anonymous mode: nothing from the account is sent. Keyless public JSON first, then the same JSON loaded as a
+// script, and only if both are refused an app-only token (it identifies the app, never a user).
+const TOKEN_URL = 'https://www.reddit.com/api/v1/access_token';
+const REDIRECT = location.origin + location.pathname;
+const SCOPES = 'identity read mysubreddits';
+const HOME = '~home';
+let preferred = null, appTok = null, jsonpN = 0, refreshing = null, authMsg = '';
+const signedIn = () => !!(cfg.auth && (cfg.auth.refresh || cfg.auth.access));
+const userMode = () => signedIn() && !cfg.anon;
+const basic = () => 'Basic ' + btoa(cfg.clientId + ':');
 
 function httpError(status, body) {
   const e = new Error('HTTP ' + status);
@@ -239,30 +282,55 @@ async function read(r) {
   if (r.ok && j) return j;
   throw httpError(r.status, j);
 }
-// 1. App-only OAuth token (only when an app ID is set). No user account involved.
-async function token() {
-  if (tok && tok.exp > Date.now() + 30000) return tok.v;
-  const r = await tfetch('https://www.reddit.com/api/v1/access_token', {
-    method: 'POST',
-    headers: { Authorization: 'Basic ' + btoa(cfg.clientId + ':') },
-    body: new URLSearchParams({ grant_type: 'https://oauth.reddit.com/grants/installed_client', device_id: 'DO_NOT_TRACK_THIS_DEVICE' })
-  });
-  const j = await read(r);
-  if (!j.access_token) throw httpError(401, null);
-  tok = { v: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000 };
-  return tok.v;
+async function tokenRequest(fields) {
+  const r = await tfetch(TOKEN_URL, { method: 'POST', headers: { Authorization: basic() }, body: new URLSearchParams(fields) });
+  let j = null;
+  try { j = await r.json(); } catch (e) {}
+  if (r.ok && j && j.access_token) return j;
+  const e = httpError(r.status, null);
+  e.denied = r.status === 400 || r.status === 401 || !!(r.ok && j && j.error); // Reddit answered, and said no
+  throw e;
 }
-async function viaOAuth(path, qs) {
-  const t = await token();
-  const r = await tfetch('https://oauth.reddit.com' + path + '?' + qs, { headers: { Authorization: 'Bearer ' + t } });
-  if (r.status === 401) tok = null;
-  return read(r);
+
+// Your token, renewed quietly when it runs out.
+function userToken() {
+  const a = cfg.auth;
+  if (!a) return Promise.reject(authLost());
+  if (a.access && a.exp > Date.now() + 60000) return Promise.resolve(a.access);
+  if (!a.refresh) return Promise.reject(authLost());
+  if (!refreshing) {
+    refreshing = tokenRequest({ grant_type: 'refresh_token', refresh_token: a.refresh }).then(j => {
+      a.access = j.access_token; a.exp = Date.now() + (j.expires_in || 3600) * 1000;
+      if (j.refresh_token) a.refresh = j.refresh_token;
+      save();
+      return a.access;
+    }, e => { throw e.denied ? authLost() : e; }).finally(() => { refreshing = null; });
+  }
+  return refreshing;
 }
-// 2. Public JSON, no cookies sent.
+function authLost() {
+  const e = new Error('signed out');
+  e.code = 'auth'; e.final = true;
+  if (cfg.auth) {
+    cfg.auth = null; save();
+    setTimeout(() => { toast('Your Reddit sign-in has expired. Browsing anonymously.', 4000); resetFeeds(); openFeed(); }, 0);
+  }
+  return e;
+}
+async function viaUser(path, qs) {
+  for (let attempt = 0; ; attempt++) {
+    const t = await userToken();
+    const r = await tfetch('https://oauth.reddit.com' + path + '?' + qs, { headers: { Authorization: 'Bearer ' + t } });
+    if (r.status !== 401) return read(r);
+    if (cfg.auth) { cfg.auth.access = ''; cfg.auth.exp = 0; }
+    if (attempt || !cfg.auth || !cfg.auth.refresh) throw authLost();
+  }
+}
+
+// Anonymous routes. No cookies, no account token.
 async function viaFetch(path, qs) {
   return read(await tfetch('https://www.reddit.com' + path + '.json?' + qs));
 }
-// 3. Same public JSON loaded as a script, for when cross-origin fetch is refused.
 function viaJsonp(path, qs) {
   return new Promise((resolve, reject) => {
     const cb = '__subgrid' + (jsonpN++), s = document.createElement('script');
@@ -274,10 +342,20 @@ function viaJsonp(path, qs) {
     document.head.appendChild(s);
   });
 }
-async function api(path, params) {
+async function viaApp(path, qs) {
+  if (!appTok || appTok.exp < Date.now() + 30000) {
+    const j = await tokenRequest({ grant_type: 'https://oauth.reddit.com/grants/installed_client', device_id: 'DO_NOT_TRACK_THIS_DEVICE' });
+    appTok = { v: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000 };
+  }
+  const r = await tfetch('https://oauth.reddit.com' + path + '?' + qs, { headers: { Authorization: 'Bearer ' + appTok.v } });
+  if (r.status === 401) appTok = null;
+  return read(r);
+}
+async function api(path, params, asUser) {
   const qs = new URLSearchParams(Object.assign({ raw_json: 1 }, params)).toString();
+  if (asUser) return viaUser(path, qs);
   let order = [viaFetch, viaJsonp];
-  if (cfg.clientId) order.unshift(viaOAuth);
+  if (cfg.clientId) order.push(viaApp);
   if (preferred && order.includes(preferred)) order = [preferred].concat(order.filter(t => t !== preferred));
   let err;
   for (const t of order) {
@@ -287,13 +365,15 @@ async function api(path, params) {
   throw err;
 }
 function explain(e, f) {
-  const who = f.all ? 'One of your subreddits' : 'r/' + f.name;
+  const who = f.home ? 'Your home feed' : f.all ? 'One of your subreddits' : 'r/' + f.name;
+  if (e.code === 'auth') return 'Your Reddit sign-in has expired.';
   if (e.code === 'notfound' || e.status === 404) return who + " wasn't found. Check the spelling.";
   if (e.reason === 'private') return who + ' is private.';
   if (e.reason === 'banned') return who + ' has been banned.';
-  if (e.reason) return who + ' is restricted by Reddit (' + e.reason + ') and needs a signed-in account.';
+  if (e.reason) return who + ' is restricted by Reddit (' + e.reason + ')' + (f.user ? '.' : '. Signing in may open it.');
   if (e.status === 429) return 'Reddit is rate-limiting this connection. Wait a minute, then retry.';
-  return "Couldn't reach Reddit. Check your connection and retry. If it keeps failing, Reddit may be refusing keyless requests from this network: add an app ID in Settings.";
+  if (e.status >= 400) return 'Reddit returned an error (' + e.status + '). Retry in a moment.';
+  return "Couldn't reach Reddit. Check your connection and retry." + (f.user || cfg.clientId ? '' : ' If it keeps failing, Reddit may be refusing keyless requests from this network: add an app ID in Settings.');
 }
 
 /* ---------- turning a Reddit post into slides ---------- */
@@ -384,7 +464,7 @@ function parsePost(d) {
   if (!s0.lo) s0.lo = thumb;
   return {
     id: d.name || d.id, title: d.title || '', sub: d.subreddit || '', author: d.author || '', score: d.score || 0,
-    nsfw: !!(d.over_18 || src.over_18), permalink: 'https://www.reddit.com' + (d.permalink || ''),
+    nsfw: !!(d.over_18 || src.over_18), permalink: 'https://www.reddit.com' + (typeof d.permalink === 'string' && d.permalink[0] === '/' ? d.permalink : ''),
     ext: host && !on('redd.it') && !on('reddit.com') ? url : '', host, kind, thumb, slides
   };
 }
@@ -393,16 +473,22 @@ function parsePost(d) {
 const feeds = new Map();
 let feed = null;
 
+function resetFeeds() { feeds.forEach(f => { f.dead = true; }); feeds.clear(); }
 function currentFeed(fresh) {
-  if (!cfg.subs.length) return null;
-  if (cfg.current !== '*' && !cfg.subs.includes(cfg.current)) cfg.current = cfg.subs[0];
-  const all = cfg.current === '*';
-  const name = all ? cfg.subs.join('+') : cfg.current;
+  const um = userMode();
+  if (cfg.current === HOME && !um) cfg.current = '*';
+  if (cfg.current === '*' && cfg.subs.length < 2) cfg.current = cfg.subs[0] || '';
+  if (cfg.current !== HOME && cfg.current !== '*' && !cfg.subs.includes(cfg.current)) cfg.current = cfg.subs[0] || '';
+  if (!cfg.current && um) cfg.current = HOME;
+  if (!cfg.current) return null;
+  const home = cfg.current === HOME, all = cfg.current === '*';
+  const name = home ? '' : all ? cfg.subs.slice(0, 100).join('+') : cfg.current;
   const t = cfg.sort === 'top' ? cfg.t : '';
-  const key = [name, cfg.sort, t].join('|');
+  const key = [um ? 'user' : 'anon', home ? HOME : name, cfg.sort, t].join('|');
   let f = feeds.get(key);
   if (!f || fresh || Date.now() - f.ts > 10 * 60e3) {
-    f = { key, name, all, path: '/r/' + name + '/' + cfg.sort, t, posts: [], slides: [], seen: new Set(), after: null,
+    if (f) f.dead = true;
+    f = { key, name, all, home, user: um, path: (home ? '' : '/r/' + name) + '/' + cfg.sort, t, posts: [], slides: [], seen: new Set(), after: null,
       done: false, loading: false, error: null, stalled: false, hidden: 0, scanned: 0, ts: Date.now() };
     feeds.set(key, f);
   }
@@ -415,11 +501,11 @@ async function loadMore(f) {
   if (f === feed) renderState();
   let added = 0;
   try {
-    for (let page = 0; page < 4 && !f.done && added < 12; page++) {
+    for (let page = 0; page < 4 && !f.done && !f.dead && added < 12; page++) {
       const params = { limit: f.after ? 100 : 50 };
       if (f.after) params.after = f.after;
       if (f.t) params.t = f.t;
-      const j = await api(f.path, params);
+      const j = await api(f.path, params, f.user);
       const kids = j && j.data && j.data.children;
       if (!Array.isArray(kids) || (kids.length && kids[0].kind !== 't3')) { const e = new Error('not found'); e.code = 'notfound'; throw e; }
       const from = f.posts.length;
@@ -477,7 +563,7 @@ function appendTiles(f, from) {
       else bd.innerHTML = ICON_PLAY;
       b.append(bd);
     }
-    b.append(el('span', 'cap', (f.all ? p.sub + ' · ' : '') + p.title));
+    b.append(el('span', 'cap', (f.all || f.home ? p.sub + ' · ' : '') + p.title));
     frag.append(b);
   }
   grid.append(frag);
@@ -497,6 +583,7 @@ function renderState() {
   bar.classList.toggle('loading', !!(f && f.loading));
   msg.textContent = '';
   if (!f) { grid.textContent = ''; say('Add a subreddit to get started.', 'Add subreddit', () => openSheet(true)); return; }
+  if (f.dead) return;
   if (f.loading) { if (!f.posts.length) skeleton(); return; }
   grid.querySelectorAll('.sk').forEach(n => n.remove());
   const idle = f.done || f.stalled;
@@ -510,6 +597,7 @@ function renderState() {
 }
 function openFeed(fresh) {
   feed = currentFeed(fresh);
+  save();
   grid.textContent = '';
   window.scrollTo(0, 0);
   renderBar();
@@ -517,9 +605,13 @@ function openFeed(fresh) {
   renderState();
   if (feed && !feed.posts.length) loadMore(feed);
 }
+const ICON_USER = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/></svg>';
+const ICON_ANON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18M7 11l1.4-6h7.2L17 11"/><circle cx="7.5" cy="16.5" r="2.7"/><circle cx="16.5" cy="16.5" r="2.7"/><path d="M10.2 16.5h3.6"/></svg>';
 function renderBar() {
+  const um = userMode();
   chips.textContent = '';
   const mk = (name, label) => { const b = el('button', 'chip' + (cfg.current === name ? ' on' : ''), label); b.dataset.sub = name; return b; };
+  if (um) chips.append(mk(HOME, 'Home'));
   if (cfg.subs.length > 1) chips.append(mk('*', 'All'));
   cfg.subs.forEach(s => chips.append(mk(s, s)));
   const on = chips.querySelector('.on');
@@ -527,6 +619,10 @@ function renderBar() {
   $('sortSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.sort === cfg.sort));
   $('timePick').hidden = cfg.sort !== 'top';
   $('timePick').value = cfg.t;
+  const mb = $('modeBtn'), who = cfg.auth && cfg.auth.name ? 'u/' + cfg.auth.name : 'your account';
+  mb.innerHTML = um ? ICON_USER : ICON_ANON;
+  mb.classList.toggle('user', um);
+  mb.setAttribute('aria-label', um ? 'Signed in as ' + who + '. Switch to anonymous mode' : signedIn() ? 'Anonymous mode. Switch back to ' + who : 'Anonymous. Sign in to Reddit');
 }
 
 chips.addEventListener('click', e => {
@@ -755,6 +851,96 @@ document.addEventListener('keydown', e => {
   else if (e.key === ' ') { const v = stage.querySelector('video'); if (v) { e.preventDefault(); if (v.paused) v.play().catch(() => {}); else v.pause(); } }
 });
 
+/* ---------- Reddit sign-in ---------- */
+const ls = {
+  get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+  del: k => { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const ID_RE = /^[A-Za-z0-9_-]{6,64}$/;
+function rand() {
+  const a = new Uint8Array(16);
+  crypto.getRandomValues(a);
+  return Array.from(a, b => ('0' + b.toString(16)).slice(-2)).join('');
+}
+// Step 1: hand over to Reddit's own sign-in page. The password never passes through this app.
+function signIn() {
+  const id = $('cidInput').value.trim();
+  if (!ID_RE.test(id)) { toast(id ? "That doesn't look like a Reddit app ID" : 'Paste your Reddit app ID first', 2600); $('cidInput').focus(); return; }
+  if (id !== cfg.clientId) { cfg.clientId = id; appTok = null; preferred = null; }
+  save();
+  const state = rand();
+  if (!ls.set(KEY + '.state', state)) { toast('Sign-in needs browser storage. Turn off Private Browsing and try again.', 4000); return; }
+  const implicit = ls.get(KEY + '.implicit') === '1';
+  const q = new URLSearchParams({ client_id: id, response_type: implicit ? 'token' : 'code', state, redirect_uri: REDIRECT, scope: SCOPES });
+  if (!implicit) q.set('duration', 'permanent');
+  location.assign('https://www.reddit.com/api/v1/authorize?' + q.toString());
+}
+// Step 2: Reddit sends the browser back here with a one-time code (or, in the fallback, a one-hour token).
+async function finishLogin() {
+  const q = new URLSearchParams(location.search), h = new URLSearchParams(location.hash.slice(1));
+  const code = q.get('code'), err = (q.get('error') || h.get('error') || '').replace(/[^a-z_]/gi, '').slice(0, 40), direct = h.get('access_token');
+  if (!code && !err && !direct) return;
+  const state = q.get('state') || h.get('state'), want = ls.get(KEY + '.state');
+  ls.del(KEY + '.state');
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  if (err) { authMsg = err === 'access_denied' ? 'Sign-in was cancelled.' : 'Reddit refused the sign-in (' + err + '). Check the app ID and its redirect URI.'; return; }
+  if (!state || state !== want) { authMsg = "That sign-in didn't start in this browser. Try again."; return; }
+  try {
+    const j = direct ? { access_token: direct, expires_in: +h.get('expires_in') || 3600 }
+      : await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: REDIRECT });
+    cfg.auth = { access: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000, refresh: j.refresh_token || '', name: '' };
+    cfg.anon = false; cfg.current = HOME; save();
+    ls.del(KEY + '.implicit');
+    resetFeeds();
+    try { const me = await api('/api/v1/me', {}, true); if (me && me.name && cfg.auth) { cfg.auth.name = me.name; save(); } } catch (e) {}
+    if (cfg.auth) toast('Signed in' + (cfg.auth.name ? ' as u/' + cfg.auth.name : ''), 3000);
+  } catch (e) {
+    if (e.denied) authMsg = 'Reddit rejected the sign-in. Check the app ID, and that the app type is "installed app".';
+    else { ls.set(KEY + '.implicit', '1'); authMsg = "Reddit didn't answer the last sign-in step. Tap Sign in again to use a simpler one-hour session instead."; }
+  }
+}
+function signOut() {
+  const a = cfg.auth;
+  cfg.auth = null; cfg.anon = false; save();
+  if (a && (a.refresh || a.access)) {
+    tfetch('https://www.reddit.com/api/v1/revoke_token', { method: 'POST', headers: { Authorization: basic() },
+      body: new URLSearchParams(a.refresh ? { token: a.refresh, token_type_hint: 'refresh_token' } : { token: a.access, token_type_hint: 'access_token' }) }).catch(() => {});
+  }
+  resetFeeds(); renderSheet(); openFeed();
+  toast('Signed out. Browsing anonymously.', 2600);
+}
+function setAnon(on) {
+  cfg.anon = !!on; save();
+  resetFeeds(); renderSheet(); openFeed();
+  toast(cfg.anon ? 'Anonymous mode on' : 'Using your account' + (cfg.auth && cfg.auth.name ? ' (u/' + cfg.auth.name + ')' : ''), 2200);
+}
+async function importSubs() {
+  const btn = $('importBtn');
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    const found = [];
+    let after = '';
+    for (let i = 0; i < 20; i++) {
+      const p = { limit: 100 };
+      if (after) p.after = after;
+      const j = await api('/subreddits/mine/subscriber', p, true);
+      const kids = (j && j.data && j.data.children) || [];
+      kids.forEach(c => { const d = c.data || {}, n = d.display_name || ''; if (d.subreddit_type !== 'user' && !/^u_/i.test(n) && NAME_RE.test(n)) found.push(n); });
+      after = j && j.data && j.data.after;
+      if (!after || !kids.length) break;
+    }
+    const have = new Set(cfg.subs.map(s => s.toLowerCase())), fresh = [];
+    found.forEach(n => { const k = n.toLowerCase(); if (!have.has(k)) { have.add(k); fresh.push(n); } });
+    fresh.sort((a, b) => a.toLowerCase() < b.toLowerCase() ? -1 : 1);
+    cfg.subs = cfg.subs.concat(fresh); save();
+    renderSheet(); renderBar();
+    if (!feed) openFeed();
+    toast(fresh.length ? 'Added ' + fresh.length + ' subreddit' + (fresh.length > 1 ? 's' : '') : found.length ? 'Your subscriptions are already here' : 'No subscriptions found', 2600);
+  } catch (e) { if (e.code !== 'auth') toast("Couldn't load your subscriptions. Try again.", 3000); }
+  btn.disabled = false; btn.textContent = 'Add my subscribed subreddits';
+}
+
 /* ---------- subreddits + settings sheet ---------- */
 function renderSheet() {
   const ul = $('subList');
@@ -766,8 +952,15 @@ function renderSheet() {
     b.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
     li.append(b); ul.append(li);
   });
+  const inn = signedIn();
+  $('acctIn').hidden = !inn; $('acctOut').hidden = inn;
+  $('acctMsg').hidden = !authMsg; $('acctMsg').textContent = authMsg;
+  if (inn) {
+    $('acctName').textContent = 'Signed in as ' + (cfg.auth.name ? 'u/' + cfg.auth.name : 'your account') + (cfg.auth.refresh ? '' : ' (one-hour session)');
+    $('anonChk').checked = !!cfg.anon;
+  } else $('cidInput').value = cfg.clientId || '';
+  $('redirUri').textContent = REDIRECT;
   $('nsfwChk').checked = !!cfg.nsfw;
-  $('cidInput').value = cfg.clientId || '';
   $('tileSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.tile === cfg.tile));
 }
 function openSheet(focusAdd) {
@@ -778,21 +971,33 @@ function openSheet(focusAdd) {
 function closeSheet() {
   if (sheet.hidden) return;
   sheet.hidden = true;
+  authMsg = '';
   $('addInput').blur();
   const cid = $('cidInput').value.trim();
-  if (cid !== cfg.clientId) { cfg.clientId = cid; tok = null; preferred = null; save(); if (feed && feed.error) loadMore(feed); }
+  if (!signedIn() && cid !== cfg.clientId && (!cid || ID_RE.test(cid))) { cfg.clientId = cid; appTok = null; preferred = null; save(); if (feed && feed.error) loadMore(feed); }
 }
 function setNsfw(on) {
   cfg.nsfw = !!on; save();
-  feeds.clear();
+  resetFeeds();
   openFeed(true);
 }
 function applyTile() { document.documentElement.style.setProperty('--tile', TILE[cfg.tile] + 'px'); }
 
 $('addBtn').addEventListener('click', () => openSheet(true));
 $('setBtn').addEventListener('click', () => openSheet(false));
+$('modeBtn').addEventListener('click', () => { if (signedIn()) setAnon(!cfg.anon); else openSheet(false); });
 $('doneBtn').addEventListener('click', closeSheet);
 sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
+$('signInBtn').addEventListener('click', signIn);
+$('cidInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); signIn(); } });
+$('signOutBtn').addEventListener('click', signOut);
+$('anonChk').addEventListener('change', e => setAnon(e.target.checked));
+$('importBtn').addEventListener('click', importSubs);
+$('copyBtn').addEventListener('click', () => {
+  const done = () => toast('Copied');
+  const pick = () => { const r = document.createRange(); r.selectNodeContents($('redirUri')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selected. Copy it from the menu.', 2600); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(REDIRECT).then(done, pick); else pick();
+});
 $('addForm').addEventListener('submit', e => {
   e.preventDefault();
   const inp = $('addInput');
@@ -813,11 +1018,10 @@ $('addForm').addEventListener('submit', e => {
 $('subList').addEventListener('click', e => {
   const b = e.target.closest('button[data-rm]');
   if (!b) return;
+  const was = cfg.current;
   cfg.subs = cfg.subs.filter(s => s !== b.dataset.rm);
-  const changed = cfg.current === b.dataset.rm || cfg.current === '*';
-  if (cfg.current === b.dataset.rm || cfg.subs.length < 2) cfg.current = cfg.subs[0] || '';
   save(); renderSheet();
-  if (changed || !cfg.subs.length) openFeed(); else renderBar();
+  if (was === b.dataset.rm || was === '*' || !cfg.subs.length) openFeed(); else renderBar();
 });
 $('nsfwChk').addEventListener('change', e => setNsfw(e.target.checked));
 $('tileSeg').addEventListener('click', e => {
@@ -827,15 +1031,20 @@ $('tileSeg').addEventListener('click', e => {
 });
 
 let toastT = 0;
-function toast(text) {
+function toast(text, ms) {
   const t = $('toast');
   t.textContent = text; t.hidden = false;
   clearTimeout(toastT);
-  toastT = setTimeout(() => { t.hidden = true; }, 1700);
+  toastT = setTimeout(() => { t.hidden = true; }, ms || 1700);
 }
 
 applyTile();
-openFeed();
+renderBar();
+finishLogin().then(() => {
+  openFeed();
+  if (authMsg) openSheet(false);
+  if (userMode() && !cfg.auth.name) api('/api/v1/me', {}, true).then(me => { if (me && me.name && cfg.auth) { cfg.auth.name = me.name; save(); renderBar(); } }).catch(() => {});
+});
 })();
 </script>
 </body>
