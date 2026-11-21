@@ -30,6 +30,7 @@
   - [13. Testing strategy](#13-testing-strategy)
   - [14. Delivery plan](#14-delivery-plan)
   - [15. Risks and open questions](#15-risks-and-open-questions)
+  - [16. Prototype status and deviations](#16-prototype-status-and-deviations)
 - [References](#references)
 - [Appendix A — The paper's SQL, annotated](#appendix-a--the-papers-sql-annotated)
 - [Appendix B — Reproducing the paper's scores](#appendix-b--reproducing-the-papers-scores)
@@ -799,6 +800,38 @@ Indicative effort for one engineer. These are elapsed weeks and can be paralleli
 6. **Code location.** This repository is a GitHub profile repository (`rabryce/rabryce`). Do you want the implementation in a dedicated repository, e.g. `addrlink`, or in an internal one?
 
 ---
+
+## 16. Prototype status and deviations
+
+*Added 2026-11-21 after building the prototype in `src/addrlink`.*
+
+### 16.1 What exists
+
+| Spec item | Status |
+|---|---|
+| §7.1 input classification, §7.2 normalisation | Done. Rules are data in `rules.py`, rendered to SQL and the oracle. |
+| §7.3–7.5 tokenisation, pass-1 blocking (both rules), pass-2 fallback | Done |
+| §7.6 capping, Dice score, features (`shared_blocks`, `lev_ratio`, `word_idf_cosine`, numeric/postcode/state status) | Done |
+| §7.7 ranking, §7.8 decisions (paper threshold, paper UC2 top-3, enhanced bands) + reason codes | Done |
+| §7.9 learned scorer | Not started (needs gold labels) |
+| §7.10 UC3 de-duplication | Not started |
+| §9 Spark + DuckDB + Python oracle, parity-tested | Done. 60 tests, including oracle ↔ DuckDB ↔ Spark parity on every output column. |
+| §6 G-NAF loader | Not started. The reference input contract is defined (README), and the synthetic generator imitates G-NAF structure. |
+| §10 outputs and run log | `match_result`, `match_candidates`, `RunLog` (config hash, version, stage timings, counts) |
+| §11.1 synthetic benchmark, §11.3 metrics with Wilson CIs | Done (`synth.py`, `evaluate.py`, `addrlink benchmark`) |
+| §11.2 gold set / clerical review | Not started |
+
+### 16.2 Deviations from §7, found while building
+
+1. **Numeric status takes part in ranking.** The order is EXACT/CONSISTENT, then LESS/MORE_SPECIFIC, then CONFLICT, and only then Dice. Ranking by Dice alone lets a shorter, less specific row win: "5 10 GEORGE ST" scores higher Dice against "10 GEORGE ST" than against "UNIT 5 10 GEORGE ST".
+2. **Numbers are compared as multisets**, using the same occurrence-index trick as characters. Under set semantics, "68/68 MULINA CT" (unit 68 at no. 68) matched the base address "68 MULINA CT".
+3. **The level number is optional** (`premise_numbers_optional`, together with the range end), because customers routinely omit it. **The canonical reference rendering puts LEVEL before the flat** ("LEVEL 2 UNIT 201 345 …"), so the flat and street numbers stay adjacent; customers write "201/345", and the bigram "201 345" is the rare blocking key that finds the right unit. Together these raised AUTO recall from 78.7% to 93.8% on the benchmark.
+4. **Range addresses get a range-start variant row** ("34 X ST" alongside "34-38 X ST"), sharing the entity id.
+5. **New `street_status`** (MATCH / FUZZY / MISMATCH / ABSENT) uses the reference street name with an edit tolerance of 0/1/2 by word length. MISMATCH blocks AUTO. Without it, "370 GEORGE PL" auto-matched "370 NORONG CRESCENT" in the same suburb at Dice 0.83.
+6. **Duplicate-token collapse applies to alphabetic tokens only** (QLD QLD → QLD; 68 68 stays). A glued-number split (12SMITH → 12 SMITH) was added.
+7. **Thresholds apply to the configured primary score as-is**, with no automatic Dice↔Jaccard conversion. Experiment E0b therefore runs literal Jaccard ≥ τ.
+8. **Spark stages must cut lineage** (`localCheckpoint` or Delta tables). Cached temp views do not: the analyser re-expands nested views and ran out of memory on the enhanced normalisation plan.
+9. **Matching runs on distinct normalised strings**, keyed by `sha256(norm)` rather than a dense rank, which needs no global sort. Input-side document frequencies are therefore counted over distinct strings.
 
 ## References
 
