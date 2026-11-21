@@ -75,6 +75,7 @@ class SynthConfig:
     p_country_suffix: float = 0.03
     p_glue_number: float = 0.02
     p_level_omitted: float = 0.50
+    max_copies: int = 1  # >1: render each positive entity 1..max_copies times (dedupe benchmarks)
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -213,13 +214,15 @@ def generate(cfg: SynthConfig | None = None) -> tuple[list[dict], list[dict]]:
     pos_ents = rng.sample([e for e in entities if e["entity_id"] not in withheld_ids], n_pos)
     qid = 0
     for e, kind in [(e, "positive") for e in pos_ents] + [(e, "negative") for e in withheld]:
-        addr, corr = _render_query(e, rng, cfg, localities, by_pc)
-        queries.append(dict(
-            id=f"Q{qid:07d}", address=addr, kind=kind,
-            true_entity_id=e["entity_id"] if kind == "positive" else None,
-            true_building_key=e["building"], segment=_segment(e), corruptions=corr,
-        ))
-        qid += 1
+        copies = rng.randint(1, cfg.max_copies) if cfg.max_copies > 1 and kind == "positive" else 1
+        for _ in range(copies):
+            addr, corr = _render_query(e, rng, cfg, localities, by_pc)
+            queries.append(dict(
+                id=f"Q{qid:07d}", address=addr, kind=kind,
+                true_entity_id=e["entity_id"] if kind == "positive" else None,
+                true_building_key=e["building"], segment=_segment(e), corruptions=corr,
+            ))
+            qid += 1
     for _ in range(int(cfg.n_queries * cfg.po_box_rate)):
         loc = rng.choice(localities)
         box = rng.choice(["PO BOX", "P.O. Box", "GPO Box", "Locked Bag", "PO Box"])

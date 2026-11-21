@@ -20,6 +20,8 @@ class NormaliseConfig(_Model):
     split_glued_prefixes: bool = True
     synonyms: bool = True
     collapse_duplicate_tokens: bool = True
+    # Extra single-token synonym pairs, e.g. from G-NAF authority tables (see gnaf.authority_synonyms).
+    extra_synonyms: dict[str, str] = Field(default_factory=dict)
 
 
 class FallbackConfig(_Model):
@@ -61,7 +63,7 @@ class OutputConfig(_Model):
 
 class MatchConfig(_Model):
     preset: str = "enhanced"
-    mode: Literal["reference", "datasets"] = "reference"
+    mode: Literal["reference", "datasets", "dedupe"] = "reference"
     normalise: NormaliseConfig = NormaliseConfig()
     blocking: BlockingConfig = BlockingConfig()
     scoring: ScoringConfig = ScoringConfig()

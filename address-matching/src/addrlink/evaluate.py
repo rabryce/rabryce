@@ -115,6 +115,23 @@ def evaluate_run(m: Matcher, res: MatchResult, queries: list[dict], ref_rows: li
     return out
 
 
+def dedupe_pairwise(clusters: Iterable[dict[str, Any]], truth: dict[str, str]) -> dict[str, float]:
+    """Pairwise precision/recall of predicted clusters against true entity ids (records in ``truth`` only)."""
+    pred: Counter = Counter()
+    true: Counter = Counter()
+    both: Counter = Counter()
+    for r in clusters:
+        if r["id"] not in truth:
+            continue
+        pred[r["cluster_id"]] += 1
+        true[truth[r["id"]]] += 1
+        both[(r["cluster_id"], truth[r["id"]])] += 1
+    pairs = lambda c: sum(n * (n - 1) // 2 for n in c.values())  # noqa: E731
+    p, t, tp = pairs(pred), pairs(true), pairs(both)
+    return dict(pairwise_precision=tp / p if p else float("nan"), pairwise_recall=tp / t if t else float("nan"),
+                predicted_pairs=p, true_pairs=t, true_positive_pairs=tp)
+
+
 # ----------------------------------------------------------------------------- report
 def _pct(x: float) -> str:
     return "–" if x != x else f"{100 * x:.1f}%"

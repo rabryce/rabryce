@@ -240,6 +240,7 @@ class SqlBuilder:
         self.cfg = cfg
         self.d = dialect
         self.p = prefix
+        self.syn = rules.merged_synonyms(cfg.normalise.extra_synonyms)
 
     def t(self, name: str) -> str:
         return f"{self.p}{name}"
@@ -258,7 +259,7 @@ class SqlBuilder:
 
     def _syn_case(self, x: str) -> str:
         whens = " ".join(
-            f"WHEN {self.d.lit(k)} THEN {self.d.lit(v)}" for k, v in sorted(rules.SYNONYMS.items()) if k != v
+            f"WHEN {self.d.lit(k)} THEN {self.d.lit(v)}" for k, v in sorted(self.syn.items()) if k != v
         )
         return f"CASE {x} {whens} ELSE {x} END"
 
@@ -355,6 +356,11 @@ n6 AS (SELECT n5.*, {w4} AS words FROM n5)
         blk2 = d.concat_arrays(bigrams, trigrams) if b.fallback.enabled else d.empty_str_array()
         chars = self.occ("cs")
         nums0 = d.transform(d.filter(w, "x", d.rlike("x", rules.HAS_DIGIT_RE)), "x", self.numcore("x"))
+        # numbers excluding level numbers (the token after the canonical level token L)
+        numsx0 = d.transform(
+            d.filter(d.seq1(d.size(w)), "i",
+                     f"{d.rlike(d.at(w, 'i'), rules.HAS_DIGIT_RE)} AND NOT (i > 1 AND {d.at(w, 'greatest(i - 1, 1)')} = 'L')"),
+            "i", self.numcore(d.at(w, "i")))
         pc_cond = (
             f"{d.rlike(d.at(w, 'i'), rules.POSTCODE_TOKEN_RE)} AND (i = {d.size(w)} OR "
             f"(i > 1 AND {d.in_list(d.at(w, 'greatest(i - 1, 1)'), rules.STATES)}))"
@@ -367,10 +373,11 @@ SELECT {id_col} AS id, norm, words{extra},
   {blk2} AS blk2,
   {chars} AS chars,
   {self.occ('nums0')} AS nums,
+  {self.occ('numsx0')} AS numsx,
   {self.numcore(pc_tok)} AS pc,
   {state} AS state,
   {d.sort_distinct(w)} AS wset
-FROM (SELECT s.*, {d.split_chars("replace(norm, ' ', '')")} AS cs, {nums0} AS nums0 FROM {src} s) z
+FROM (SELECT s.*, {d.split_chars("replace(norm, ' ', '')")} AS cs, {nums0} AS nums0, {numsx0} AS numsx0 FROM {src} s) z
 """
 
     # ------------------------------------------------------------ reference
@@ -396,7 +403,7 @@ FROM n6"""
   {self.light_words('street_name')} AS sname"""
         tok_sql = self._tok_select(f"(SELECT * FROM {t('r_norm')} WHERE norm <> '')", "r_id", extra)
         tok_final = f"""
-SELECT id, norm, words, entity_id, address, blk, blk2, chars, nums, wset, prem_req, prem_opt, sname,
+SELECT id, norm, words, entity_id, address, blk, blk2, chars, nums, numsx, wset, prem_req, prem_opt, sname,
        CASE WHEN prem_req IS NULL THEN {d.null_str_array()} ELSE {self.occ('prem_req')} END AS prem_req_idx,
        CASE WHEN prem_req IS NULL THEN {d.null_str_array()}
             ELSE {self.occ(d.concat_arrays('prem_req', 'prem_opt'))} END AS prem_all_idx,
@@ -457,6 +464,9 @@ FROM (SELECT DISTINCT norm FROM {t('q_norm')} WHERE input_class = 'PHYSICAL') z"
             Stage(t("q_post"), f"SELECT DISTINCT id, token FROM (SELECT id, {d.explode('blk')} AS token FROM {t('q_tok')}) z"),
             Stage(t("q_df"), f"SELECT token, count(*) AS df FROM {t('q_post')} GROUP BY token"),
         ]
+        def self_excl(q: str, r: str) -> str:
+            return f" AND {q} <> {r}" if c.mode == "dedupe" else ""
+
         if b.rule == "both_sides":
             keep = f"qd.df <= {b.k} AND rd.df <= {b.k}"
         else:
@@ -467,7 +477,7 @@ FROM {t('q_post')} qp
 JOIN {t('q_df')} qd ON qd.token = qp.token
 JOIN {t('r_df')} rd ON rd.token = qp.token
 JOIN {t('r_post')} rp ON rp.token = qp.token
-WHERE {keep}
+WHERE {keep}{self_excl('qp.id', 'rp.id')}
 GROUP BY qp.id, rp.id"""
         stages.append(Stage(t("cand1"), cand1))
         cand_union = f"SELECT * FROM {t('cand1')}"
@@ -485,6 +495,7 @@ SELECT q_id, token, idf FROM (
             cand2 = f"""
 SELECT f.q_id, rp.id AS r_id, count(*) AS shared_blocks, round(sum(f.idf), 9) AS idf_overlap, 2 AS blocking_pass
 FROM {t('q_fb_tok')} f JOIN {t('r_post2')} rp ON rp.token = f.token
+WHERE 1 = 1{self_excl('f.q_id', 'rp.id')}
 GROUP BY f.q_id, rp.id"""
             stages += [Stage(t("q_fb_tok"), fb_tok), Stage(t("cand2"), cand2)]
             cand_union += f" UNION ALL SELECT * FROM {t('cand2')}"
@@ -510,7 +521,7 @@ SELECT c.q_id, c.r_id, c.shared_blocks, c.idf_overlap, c.blocking_pass, c.n_cand
        r.entity_id, r.address AS ref_address,
        q.norm AS q_norm, r.norm AS r_norm,
        {d.size(d.intersect('q.chars', 'r.chars'))} AS inter, {d.size('q.chars')} AS qa, {d.size('r.chars')} AS rb,
-       q.nums AS q_nums, r.nums AS r_nums, q.pc AS q_pc, r.pc AS r_pc, q.state AS q_state, r.state AS r_state,
+       q.nums AS q_nums, r.nums AS r_nums, q.numsx AS q_numsx, r.numsx AS r_numsx, q.pc AS q_pc, r.pc AS r_pc, q.state AS q_state, r.state AS r_state,
        r.prem_req_idx, r.prem_all_idx, r.sname AS r_sname, q.words AS q_words,
        q.wset AS q_wset, r.wset AS r_wset, qv.widf AS q_widf, qv.wnorm AS q_wnorm, rv.wnorm AS r_wnorm
 FROM {t('cand')} c
@@ -532,15 +543,21 @@ JOIN {t('r_wv')} rv ON rv.id = c.r_id"""
 
         core = "split_part(x, '#', 1)"
         excl = f"{core} <> coalesce(q_pc, '#') AND {core} <> coalesce(r_pc, '#')"
-        if c.scoring.numeric_exclude_postcodes:
-            na = d.filter("q_nums", "x", excl)
-            nb = d.filter("r_nums", "x", excl)
-        else:
-            na, nb = "q_nums", "r_nums"
-        subset = (
-            f"CASE WHEN {d.except_size(na, nb)} = 0 OR {d.except_size(nb, na)} = 0 "
-            f"THEN 'CONSISTENT' ELSE 'CONFLICT' END"
-        )
+        if c.decision.method == "threshold":  # paper (SPEC §1.3): one numeric set contains the other
+            na, nb = ("q_nums", "r_nums")
+            if c.scoring.numeric_exclude_postcodes:
+                na, nb = d.filter(na, "x", excl), d.filter(nb, "x", excl)
+            subset = (
+                f"CASE WHEN {d.except_size(na, nb)} = 0 OR {d.except_size(nb, na)} = 0 "
+                f"THEN 'CONSISTENT' ELSE 'CONFLICT' END"
+            )
+        else:  # enhanced: equal multisets (levels, postcodes excluded); containment is only SUBSET
+            na, nb = d.filter("q_numsx", "x", excl), d.filter("r_numsx", "x", excl)
+            a_b, b_a = d.except_size(na, nb), d.except_size(nb, na)
+            subset = (
+                f"CASE WHEN {a_b} = 0 AND {b_a} = 0 THEN 'CONSISTENT' "
+                f"WHEN {a_b} = 0 OR {b_a} = 0 THEN 'SUBSET' ELSE 'CONFLICT' END"
+            )
         if c.scoring.numeric_rule == "structured" and c.mode == "reference":
             nq = d.filter("q_nums", "x", excl)
             missing = d.except_size("prem_req_idx", nq)
@@ -606,7 +623,7 @@ SELECT * FROM (
 ) z WHERE rnk <= {c.keep_ranked}"""
         ranked2 = f"SELECT r.*, row_number() OVER (PARTITION BY q_id, numeric_rank ORDER BY rnk) AS crk FROM {t('ranked')} r"
         thr = c.decision.method == "threshold"
-        if thr and c.mode == "datasets":
+        if thr and c.mode in ("datasets", "dedupe"):
             sel_cond = f"numeric_status = 'CONSISTENT' AND rnk <= {c.decision.top_n_numeric}"
         else:
             sel_cond = "rnk = 1"
@@ -614,7 +631,7 @@ SELECT * FROM (
 
         dc = c.decision
         if thr:
-            if c.mode == "datasets":
+            if c.mode in ("datasets", "dedupe"):
                 decision = "'AUTO_MATCH'"
             else:
                 decision = f"CASE WHEN s.score > {d.dbl(repr(dc.tau))} THEN 'AUTO_MATCH' ELSE 'NO_MATCH' END"

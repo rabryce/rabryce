@@ -814,9 +814,9 @@ Indicative effort for one engineer. These are elapsed weeks and can be paralleli
 | §7.6 capping, Dice score, features (`shared_blocks`, `lev_ratio`, `word_idf_cosine`, numeric/postcode/state status) | Done |
 | §7.7 ranking, §7.8 decisions (paper threshold, paper UC2 top-3, enhanced bands) + reason codes | Done |
 | §7.9 learned scorer | Not started (needs gold labels) |
-| §7.10 UC3 de-duplication | Not started |
+| §7.10 UC3 de-duplication | Done (`Matcher.dedupe`, `addrlink dedupe`): one best AUTO edge per distinct string, then connected components by SQL min-label propagation. The cluster-diameter guard is not done. |
 | §9 Spark + DuckDB + Python oracle, parity-tested | Done. 60 tests, including oracle ↔ DuckDB ↔ Spark parity on every output column. |
-| §6 G-NAF loader | Not started. The reference input contract is defined (README), and the synthetic generator imitates G-NAF structure. |
+| §6 G-NAF loader | Done (`gnaf.py`, `addrlink gnaf`). Covers principal + alias addresses, locality/street alias variants, range-start variants, premise arrays, geocodes, and authority-table synonyms (which never override curated entries). Tested on a fixture in the published PSV layout and identical on DuckDB and Spark. **Not yet run on a real release.** |
 | §10 outputs and run log | `match_result`, `match_candidates`, `RunLog` (config hash, version, stage timings, counts) |
 | §11.1 synthetic benchmark, §11.3 metrics with Wilson CIs | Done (`synth.py`, `evaluate.py`, `addrlink benchmark`) |
 | §11.2 gold set / clerical review | Not started |
@@ -832,6 +832,8 @@ Indicative effort for one engineer. These are elapsed weeks and can be paralleli
 7. **Thresholds apply to the configured primary score as-is**, with no automatic Dice↔Jaccard conversion. Experiment E0b therefore runs literal Jaccard ≥ τ.
 8. **Spark stages must cut lineage** (`localCheckpoint` or Delta tables). Cached temp views do not: the analyser re-expands nested views and ran out of memory on the enhanced normalisation plan.
 9. **Matching runs on distinct normalised strings**, keyed by `sha256(norm)` rather than a dense rank, which needs no global sort. Input-side document frequencies are therefore counted over distinct strings.
+10. **Dataset/dedupe numeric rule (enhanced):** numbers must be equal as multisets, with levels and postcodes excluded. Containment gives `SUBSET`, which goes to review, never AUTO. The paper's subset rule chained building-level records to every unit in the building during de-duplication. With it, pairwise precision on the 500-query test set was 96.1%; after the change, the enhanced preset reaches 99.8% on 12,081 records (paper preset: 96.7%).
+11. **Synthetic scale point:** 1.98M reference rows × 60k queries on 4-core DuckDB: reference build 36 s, link 19 s; precision 99.8%, recall 93.5%. A `tau_auto` sweep (0.70–0.90) showed flat precision, so the structural checks carry precision and τ trades recall against review volume (`docs/sweep-tau-auto.md`).
 
 ## References
 

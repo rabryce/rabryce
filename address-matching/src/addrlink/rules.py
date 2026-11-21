@@ -106,6 +106,28 @@ ACCENTS_FROM = "ÀÁÂÃÄÅàáâãäåÈÉÊËèéêëÌÍÎÏìíîïÒÓÔÕ
 ACCENTS_TO = "AAAAAAaaaaaaEEEEeeeeIIIIiiiiOOOOOOooooooUUUUuuuuYyyNnCc"
 
 _TOKEN_OK = re.compile(r"^[A-Z0-9]+( [A-Z0-9]+)*$")
+_SINGLE = re.compile(r"^[A-Z0-9]+$")
+
+
+def merged_synonyms(extra: dict[str, str] | None = None) -> dict[str, str]:
+    """Curated SYNONYMS plus extra (e.g. G-NAF authority-table) pairs.
+
+    Extra pairs never override the curated list: a pair is used only when neither token is
+    already curated (AS 4590 uses STRT for STRAIGHT, while the curated list maps STRT to
+    STREET). The canonical form is the shorter token. Multi-word entries are ignored.
+    """
+    syn = dict(SYNONYMS)
+    for a, b in sorted((extra or {}).items()):
+        a, b = a.strip().upper(), b.strip().upper()
+        if not (_SINGLE.match(a) and _SINGLE.match(b)) or a in SYNONYMS or b in SYNONYMS:
+            continue
+        canon = min((a, b), key=lambda t: (len(t), t))
+        for t in (a, b):
+            syn.setdefault(t, canon)
+        syn.setdefault(canon, canon)
+    for k, v in list(syn.items()):  # enforce idempotency
+        syn[k] = syn.get(v, v)
+    return syn
 
 
 def validate_vocabulary() -> None:

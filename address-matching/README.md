@@ -11,6 +11,12 @@ described in [`docs/SPEC.md`](docs/SPEC.md).
 - **Two presets:** `paper` reproduces the paper faithfully; `enhanced` adds the SPEC §7 improvements.
 - **Explainable decisions:** `AUTO_MATCH` / `REVIEW` / `PARTIAL_MATCH` / `NO_MATCH` / `NON_PHYSICAL` /
   `EMPTY` / `OUT_OF_SCOPE`, each with features and reason codes.
+- **Three use cases:**
+  - reference linking to G-NAF (UC1);
+  - linking two raw datasets (UC2);
+  - de-duplication with clustering inside one dataset (UC3).
+- **G-NAF loader:** flattens the official PSV release into the reference format, including aliases,
+  range variants and authority-table synonyms.
 
 ## Results on the synthetic benchmark
 
@@ -27,6 +33,15 @@ The full breakdown by segment and corruption type is in [`docs/benchmark-synthet
 | AUTO on queries with no true match | 37.7% | 1.0% |
 | Blocking recall (pre-cap) | 90.1% | 99.5% |
 
+**At scale:** 1,977,652 reference rows (about an eighth of G-NAF) and 60,000 queries ran on DuckDB with 4 cores.
+The reference build took 36 s and matching took 19 s, about 3,100 queries per second. Quality held:
+99.8% precision, 93.5% recall, and 0.2% auto-match on queries with no true match.
+**De-duplication:** 12,081 records were made from 6,000 addresses typed 1–3 times each.
+`enhanced` reached 99.8% pairwise precision and 86.8% pairwise recall; `paper` reached 96.7% and 79.2%.
+**Threshold sweep** ([`docs/sweep-tau-auto.md`](docs/sweep-tau-auto.md)): precision stays at 99.7% for
+every `tau_auto` from 0.70 to 0.90. The structural checks carry precision, and `tau_auto` only
+trades recall against review volume.
+
 The `paper` preset lands close to the paper's own figure: ~12% false positives at τ = 0.7, against our 13%.
 Most remaining `enhanced` errors are transposed unit or street numbers (UNIT 26 typed for UNIT 62).
 Those inputs describe a different address that really exists, so no matcher can recover them.
@@ -39,10 +54,13 @@ reviewed gold set (SPEC §11.2).
 pip install -e ".[dev]"            # add ".[spark]" for local Spark
 addrlink benchmark                 # synthetic paper-vs-enhanced comparison
 addrlink synth --out data/         # write reference.parquet + queries.parquet
+addrlink gnaf --root ~/G-NAF --out gnaf.parquet --synonyms-out gnaf_syn.json   # real G-NAF release
 addrlink match --reference data/reference.parquet --queries data/queries.parquet --out results.parquet
+addrlink dedupe --input data/queries.parquet --out clusters.parquet
+addrlink benchmark --presets enhanced --sweep decision.tau_auto=0.75,0.8,0.85
 addrlink explain --reference data/reference.parquet "U713/311 Gun Pl Hilnu ACT 2605"
 addrlink sql --engine spark        # print the generated Spark SQL
-pytest                             # 60 tests incl. oracle/DuckDB/Spark parity (-m "not spark" to skip Spark)
+pytest                             # 68 tests incl. oracle/DuckDB/Spark parity (-m "not spark" to skip Spark)
 ```
 
 ```python
@@ -106,6 +124,7 @@ src/addrlink/
   engines.py    DuckDB and Spark execution (checkpoint / Delta table materialisation)
   api.py        Matcher, MatchResult, RunLog
   oracle.py     pure-Python reference implementation (parity tests, debugging)
+  gnaf.py       G-NAF PSV release -> reference table (+ authority-table synonyms)
   synth.py      synthetic G-NAF-like reference + corrupted queries with known truth
   evaluate.py   precision/recall/blocking recall with Wilson CIs, markdown report
   cli.py        addrlink synth | match | benchmark | explain | sql
@@ -115,10 +134,14 @@ docs/SPEC.md    review, research, specification (see §16 for prototype status)
 
 ## Status
 
-This is a working prototype; the status table is SPEC §16. What's next:
+This is a working prototype; the status table is SPEC §16.
 
-- G-NAF PSV loader and authority-table synonyms
-- a de-duplication mode (UC3)
-- a scale run on Databricks
-- threshold calibration on real data with a gold set
-- the optional learned scorer
+**Not yet verified:**
+- The G-NAF loader is tested only on a fixture in the published PSV layout. Run it on a real
+  release before relying on it.
+- Nothing has run on a Databricks cluster. Spark is tested locally, in both storage modes.
+
+**Next:**
+- run on a real G-NAF release and real bank data;
+- build a clerically reviewed gold set and calibrate thresholds on it (SPEC §11.2);
+- the optional learned scorer (SPEC §7.9).

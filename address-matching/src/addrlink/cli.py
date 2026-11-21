@@ -1,4 +1,4 @@
-"""Command-line interface: ``addrlink synth | match | benchmark | explain | sql``."""
+"""Command-line interface: ``addrlink synth | gnaf | match | dedupe | benchmark | explain | sql``."""
 
 from __future__ import annotations
 
@@ -58,6 +58,8 @@ def cmd_benchmark(args: argparse.Namespace) -> None:
 
     ref, qs = generate(SynthConfig(target_addresses=args.n_ref, n_queries=args.n_queries,
                                    n_localities=max(20, args.n_ref // 100), seed=args.seed))
+    if args.sweep:
+        return _sweep(args, ref, qs)
     runs = {}
     for preset in args.presets.split(","):
         cfg = MatchConfig.from_preset(preset)
@@ -75,6 +77,55 @@ def cmd_benchmark(args: argparse.Namespace) -> None:
         with open(args.report, "w") as f:
             f.write(md + "\n")
     print(md)
+
+
+def _sweep(args: argparse.Namespace, ref: list[dict], qs: list[dict]) -> None:
+    """One parameter, several values, first preset: the precision/recall/review trade-off."""
+    from .api import Matcher
+    from .evaluate import _ci, _pct, evaluate_run
+
+    key, _, vals = args.sweep.partition("=")
+    preset = args.presets.split(",")[0]
+    lines = [f"# Sweep of `{key}` ({preset}; {len(ref)} reference rows, {len(qs)} queries, seed={args.seed})", "",
+             f"| {key} | AUTO precision (95% CI) | AUTO recall | REVIEW+PARTIAL | wrong-unit/AUTO | AUTO on negatives |",
+             "|---|---|---|---|---|---|"]
+    for v in vals.split(","):
+        cfg = MatchConfig.from_preset(preset).with_dotted([*(args.set or []), f"{key}={v}"])
+        m = Matcher(args.engine, cfg, prefix=f"sw_", collect_counts=True, **_spark_kw(args))
+        m.prepare_reference(ref)
+        t = evaluate_run(m, m.link(qs), qs, ref)["total"]
+        lines.append(f"| {v} | {_pct(t['precision_auto'])}{_ci(t['precision_auto_ci'])} | {_pct(t['recall_auto'])} | "
+                     f"{_pct(t['review_rate'])} | {_pct(t['wrong_unit_rate_auto'])} | "
+                     f"{_pct(t['false_match_rate_negatives'])} |")
+        print(lines[-1], file=sys.stderr)
+    md = "\n".join(lines)
+    if args.report:
+        with open(args.report, "w") as f:
+            f.write(md + "\n")
+    print(md)
+
+
+def cmd_gnaf(args: argparse.Namespace) -> None:
+    from .engines import DuckDBEngine
+    from .gnaf import authority_synonyms, load_gnaf
+
+    e = DuckDBEngine()
+    name = load_gnaf(e, args.root)
+    e.to_parquet(name, args.out)
+    syn = authority_synonyms(e)
+    if args.synonyms_out:
+        with open(args.synonyms_out, "w") as f:
+            json.dump({"normalise": {"extra_synonyms": syn}}, f, indent=2, sort_keys=True)
+    print(json.dumps({"reference_rows": e.count(name), "out": args.out, "extra_synonyms": len(syn)}))
+
+
+def cmd_dedupe(args: argparse.Namespace) -> None:
+    from .api import Matcher
+
+    m = Matcher(args.engine, _config(args), **_spark_kw(args))
+    res = m.dedupe(args.input, id_col=args.id_col, address_cols=args.address_cols)
+    m.engine.to_parquet(res.clusters_table, args.out)  # type: ignore[attr-defined]
+    print(json.dumps(res.summary()))
 
 
 def cmd_explain(args: argparse.Namespace) -> None:
@@ -133,7 +184,22 @@ def main(argv: list[str] | None = None) -> None:
     sp.add_argument("--n-queries", type=int, default=6_000)
     sp.add_argument("--seed", type=int, default=7)
     sp.add_argument("--report", help="write the markdown report here")
+    sp.add_argument("--sweep", help="KEY=v1,v2,... e.g. decision.tau_auto=0.75,0.8,0.85 (uses first preset)")
     sp.set_defaults(fn=cmd_benchmark)
+
+    sp = sub.add_parser("gnaf", help="flatten a G-NAF PSV release into a reference Parquet file")
+    sp.add_argument("--root", required=True, help="directory containing the extracted G-NAF release")
+    sp.add_argument("--out", required=True)
+    sp.add_argument("--synonyms-out", help="write authority-table synonyms as a --config JSON file")
+    sp.set_defaults(fn=cmd_gnaf)
+
+    sp = sub.add_parser("dedupe", help="cluster duplicate addresses within one file (UC3)")
+    common(sp)
+    sp.add_argument("--input", required=True)
+    sp.add_argument("--out", required=True)
+    sp.add_argument("--id-col", default="id")
+    sp.add_argument("--address-cols", nargs="+", default=["address"])
+    sp.set_defaults(fn=cmd_dedupe)
 
     sp = sub.add_parser("explain", help="match one address and show the candidates")
     common(sp, engine=False)

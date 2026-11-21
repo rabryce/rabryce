@@ -63,3 +63,29 @@ Queries: 5640 positive, 300 negative (true address withheld from reference), 60 
 
 **enhanced** decisions: AUTO_MATCH=5281, NON_PHYSICAL=60, NO_MATCH=265, PARTIAL_MATCH=18, REVIEW=376
 
+
+## Scale point (enhanced, DuckDB, 4 cores, seed=9)
+
+1,977,652 reference rows (about an eighth of G-NAF) and 60,000 queries:
+
+| | |
+|---|---|
+| Reference build (incl. bulk load from Python) | 36 s |
+| Link (all query stages) | 19 s (≈3,100 queries/s) |
+| Candidate pairs scored | 2,356,093 |
+| AUTO precision / recall | 99.76% / 93.47% |
+| AUTO on negatives | 0.23% |
+| Blocking recall pre / post cap | 99.39% / 98.50% |
+
+## De-duplication (UC3, seed=21)
+
+12,081 records from 6,000 addresses, each typed 1–3 times with corruptions:
+
+| | paper | enhanced |
+|---|---|---|
+| Pairwise precision | 96.7% | 99.8% |
+| Pairwise recall | 79.2% | 86.8% |
+
+## Threshold sweep
+
+See [`sweep-tau-auto.md`](sweep-tau-auto.md).

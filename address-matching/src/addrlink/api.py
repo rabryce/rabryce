@@ -52,6 +52,25 @@ class MatchResult:
         self.engine.to_parquet(self.result_table, path)  # type: ignore[attr-defined]
 
 
+@dataclass
+class DedupeResult:
+    engine: Engine
+    clusters_table: str
+    edges_table: str
+    match: MatchResult
+    iterations: int
+
+    def clusters(self) -> list[dict]:
+        return self.engine.fetch(f"SELECT * FROM {self.clusters_table} ORDER BY id")
+
+    def summary(self) -> dict[str, int]:
+        r = self.engine.fetch(
+            f"SELECT count(*) AS n_records, count(DISTINCT cluster_id) AS n_clusters, "
+            f"sum(CASE WHEN cluster_size > 1 THEN 1 ELSE 0 END) AS n_in_multi FROM {self.clusters_table}"
+        )[0]
+        return {k: int(v or 0) for k, v in r.items()} | {"iterations": self.iterations}
+
+
 class Matcher:
     """Two-round, parse-free address matcher.
 
@@ -165,6 +184,58 @@ FROM {raw}"""
                                premise_col=None, premise_opt_col=None, postcode_col=None, state_col=None,
                                street_col=None)
         return self.link(a, id_col=id_col, address_cols=address_cols)
+
+    def dedupe(
+        self, data: Any, *, id_col: str = "id", address_cols: Sequence[str] = ("address",), max_iter: int = 50
+    ) -> DedupeResult:
+        """UC3 (SPEC §7.10): link a dataset to itself and cluster AUTO_MATCH edges.
+
+        Matching runs on distinct normalised strings (identical strings share a cluster
+        trivially), never pairing a string with itself. Each string contributes at most one
+        edge (to its selected match); clusters are connected components found by iterative
+        min-label propagation in SQL, so the same code runs on Spark.
+        """
+        if self.config.mode != "dedupe":
+            self.config = self.config.override(mode="dedupe")
+            self.sql = SqlBuilder(self.config, self.engine.dialect, self.prefix)
+        d, t = self.engine.dialect, self.sql.t
+        timings: dict[str, float] = {}
+        raw = self.engine.source_relation(data, t("q_raw"), QUERY_SCHEMA)
+        self._run(t("q_src"), f"SELECT CAST({id_col} AS {d.str_type}) AS id, "
+                              f"{address_expr(d, address_cols)} AS address FROM {raw}", timings)
+        q_norm = self.sql.query_stages(1)[0]
+        self._run(q_norm.name, q_norm.sql, timings)
+        self._run(t("dd_ref"), f"SELECT norm_key AS r_id, norm_key AS entity_id, min(norm) AS address "
+                               f"FROM {t('q_norm')} WHERE input_class = 'PHYSICAL' GROUP BY norm_key", timings)
+        self.prepare_reference(t("dd_ref"), premise_col=None, premise_opt_col=None, postcode_col=None,
+                               state_col=None, street_col=None)
+        res = self.link(t("q_src"), id_col="id", address_cols=["address"])
+        self._run(t("dd_edges"), f"SELECT DISTINCT q_id AS a, entity_id AS b, score, decision "
+                                 f"FROM {t('decided')} WHERE decision = 'AUTO_MATCH'", timings)
+        self._run(t("dd_adj"), f"SELECT a AS n, b AS m FROM {t('dd_edges')} UNION SELECT b, a FROM {t('dd_edges')}",
+                  timings)
+        cur = t("dd_lab0")
+        self._run(cur, f"SELECT DISTINCT norm_key AS n, norm_key AS label FROM {t('q_norm')} "
+                       f"WHERE input_class = 'PHYSICAL'", timings)
+        it = 0
+        for it in range(1, max_iter + 1):
+            nxt = t(f"dd_lab{it % 2 + 1}")
+            self._run(nxt, f"""
+SELECT l.n, least(l.label, coalesce(min(nb.label), l.label)) AS label
+FROM {cur} l LEFT JOIN {t('dd_adj')} e ON e.n = l.n LEFT JOIN {cur} nb ON nb.n = e.m
+GROUP BY l.n, l.label""", timings)
+            changed = self.engine.scalar(f"SELECT count(*) FROM {nxt} x JOIN {cur} y ON x.n = y.n "
+                                         f"WHERE x.label <> y.label")
+            cur = nxt
+            if int(changed) == 0:
+                break
+        self._run(t("dd_clusters"), f"""
+SELECT id, norm_key, input_class, cluster_id, count(*) OVER (PARTITION BY cluster_id) AS cluster_size
+FROM (SELECT n.id, n.norm_key, n.input_class,
+             CASE WHEN n.input_class = 'PHYSICAL' THEN l.label ELSE concat('X:', n.id) END AS cluster_id
+      FROM {t('q_norm')} n LEFT JOIN {cur} l ON l.n = n.norm_key) z""", timings)
+        res.run_log.timings.update({f"dedupe:{k}": v for k, v in timings.items()})
+        return DedupeResult(self.engine, t("dd_clusters"), t("dd_edges"), res, it)
 
     def explain_sql(self) -> str:
         n = self.n_ref or 1000

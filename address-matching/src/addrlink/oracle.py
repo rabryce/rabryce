@@ -53,8 +53,19 @@ def light_words(x: str | None, cfg: MatchConfig) -> list[str]:
         a = a.translate(_FOLD)
     w = [t for t in _NONALNUM.sub(" ", a.upper()).strip(" ").split(" ") if t != ""]
     if cfg.normalise.synonyms:
-        w = [rules.SYNONYMS.get(t, t) for t in w]
+        syn = _syn(cfg)
+        w = [syn.get(t, t) for t in w]
     return w
+
+
+_SYN_CACHE: dict[str, dict[str, str]] = {}
+
+
+def _syn(cfg: MatchConfig) -> dict[str, str]:
+    key = repr(sorted(cfg.normalise.extra_synonyms.items()))
+    if key not in _SYN_CACHE:
+        _SYN_CACHE[key] = rules.merged_synonyms(cfg.normalise.extra_synonyms)
+    return _SYN_CACHE[key]
 
 
 def sha256(s: str) -> str:
@@ -81,6 +92,7 @@ def normalise(address: str | None, cfg: MatchConfig, classify: bool = True) -> t
     phrases: list[tuple[str, str]] = []
     if n.drop_noise_tokens:
         phrases += [(p, "") for p in rules.NOISE_PHRASES]
+    syn = _syn(cfg)
     if n.synonyms:
         phrases += list(rules.STATE_PHRASES.items())
     for src, dst in phrases:
@@ -96,7 +108,7 @@ def normalise(address: str | None, cfg: MatchConfig, classify: bool = True) -> t
             for x in w
         ).split(" ")
     if n.synonyms:
-        w = [rules.SYNONYMS.get(x, x) for x in w]
+        w = [syn.get(x, x) for x in w]
     if n.drop_noise_tokens:
         w = [x for i, x in enumerate(w, 1) if not (i == len(w) and x in rules.TRAILING_NOISE)]
     if n.collapse_duplicate_tokens:
@@ -116,6 +128,7 @@ class Tok:
     blk2: list[str]
     chars: list[str]
     nums: list[str]
+    numsx: list[str]
     pc: str | None
     state: str | None
     wset: list[str]
@@ -145,6 +158,8 @@ def tokenise(id_: str, words: list[str], norm: str, cfg: MatchConfig) -> Tok:
     cs = list(norm.replace(" ", ""))
     chars = occ(cs)
     nums = occ([numcore(x) for x in words if _DIGIT.search(x)])  # type: ignore[misc]
+    numsx = occ([numcore(x) for i, x in enumerate(words)  # type: ignore[misc]
+                 if _DIGIT.search(x) and not (i > 0 and words[i - 1] == "L")])
     pcs = [
         words[i - 1]
         for i in range(1, n + 1)
@@ -152,7 +167,7 @@ def tokenise(id_: str, words: list[str], norm: str, cfg: MatchConfig) -> Tok:
     ]
     states = [x for x in words if x in rules.STATES]
     return Tok(
-        id=id_, norm=norm, words=words, blk=bigrams, blk2=blk2, chars=chars, nums=nums,  # type: ignore[arg-type]
+        id=id_, norm=norm, words=words, blk=bigrams, blk2=blk2, chars=chars, nums=nums, numsx=numsx,  # type: ignore[arg-type]
         pc=numcore(pcs[-1]) if pcs else None, state=states[-1] if states else None,
         wset=sorted(set(words)),
     )
@@ -242,6 +257,8 @@ class Oracle:
                 if not ok:
                     continue
                 for rid in self.post[tok]:
+                    if cfg.mode == "dedupe" and rid == qid:
+                        continue
                     c = cand[qid].setdefault(rid, dict(shared_blocks=0, idf=[], blocking_pass=1))
                     c["shared_blocks"] += 1
                     c["idf"].append(self.r_idf[tok])
@@ -255,6 +272,8 @@ class Oracle:
                 )[: b.fallback.m]
                 for df2, tok in toks:
                     for rid in self.post2[tok]:
+                        if cfg.mode == "dedupe" and rid == qid:
+                            continue
                         c = cand[qid].setdefault(rid, dict(shared_blocks=0, idf=[], blocking_pass=2))
                         c["shared_blocks"] += 1
                         c["idf"].append(round(math.log(N / df2), 6))
@@ -324,12 +343,15 @@ class Oracle:
 
         qpc, rpc = qt.pc or "#", rt.pc or "#"
         keep = lambda x: x.split("#")[0] not in (qpc, rpc)  # noqa: E731
-        if cfg.scoring.numeric_exclude_postcodes:
-            na = [x for x in qt.nums if keep(x)]
-            nb = [x for x in rt.nums if keep(x)]
-        else:
+        if cfg.decision.method == "threshold":
             na, nb = qt.nums, rt.nums
-        subset = "CONSISTENT" if (not set(na) - set(nb)) or (not set(nb) - set(na)) else "CONFLICT"
+            if cfg.scoring.numeric_exclude_postcodes:
+                na, nb = [x for x in na if keep(x)], [x for x in nb if keep(x)]
+            subset = "CONSISTENT" if (not set(na) - set(nb)) or (not set(nb) - set(na)) else "CONFLICT"
+        else:
+            na, nb = [x for x in qt.numsx if keep(x)], [x for x in rt.numsx if keep(x)]
+            a_b, b_a = set(na) - set(nb), set(nb) - set(na)
+            subset = "CONSISTENT" if not a_b and not b_a else "SUBSET" if not a_b or not b_a else "CONFLICT"
         if cfg.scoring.numeric_rule == "structured" and cfg.mode == "reference":
             if rt.prem_req_idx is None or rt.prem_all_idx is None:
                 status = subset
@@ -387,7 +409,7 @@ class Oracle:
     def _decide(self, ranked: list[dict]) -> dict | None:
         cfg, dc = self.cfg, self.cfg.decision
         thr = dc.method == "threshold"
-        if thr and cfg.mode == "datasets":
+        if thr and cfg.mode in ("datasets", "dedupe"):
             sel = [r for r in ranked if r["numeric_status"] == "CONSISTENT" and r["rnk"] <= dc.top_n_numeric]
         else:
             sel = [r for r in ranked if r["rnk"] == 1]
@@ -399,7 +421,7 @@ class Oracle:
         has_comp = comp is not None
         ordered = has_comp and (s["shared_blocks"] > comp["shared_blocks"] or s["lev_ratio"] > comp["lev_ratio"])
         if thr:
-            decision = "AUTO_MATCH" if cfg.mode == "datasets" or s["score"] > dc.tau else "NO_MATCH"
+            decision = "AUTO_MATCH" if cfg.mode in ("datasets", "dedupe") or s["score"] > dc.tau else "NO_MATCH"
         elif (s["score"] >= dc.tau_auto and s["numeric_rank"] == 0 and s["postcode_status"] != "MISMATCH"
               and s["state_status"] != "MISMATCH" and s["street_status"] != "MISMATCH" and (margin >= dc.min_margin or ordered)):
             decision = "AUTO_MATCH"
